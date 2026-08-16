@@ -1,11 +1,13 @@
 {
-  "name": "hairconcept-backend",
+  "name": "hairconcept",
   "version": "1.0.0",
-  "description": "Backend para HairConcept - Sistema de Agendamento para Salões",
-  "main": "backend-server.example.js",
+  "description": "HairConcept - Sistema de Agendamento para Salões com Firebase & Stripe",
+  "main": "api/config.js",
   "scripts": {
-    "start": "node backend-server.example.js",
-    "dev": "nodemon backend-server.example.js"
+    "start": "node docs/examples/backend-server.example.js",
+    "dev": "nodemon docs/examples/backend-server.example.js",
+    "build": "echo 'Build successful'",
+    "vercel-build": "echo 'Building for Vercel...'"
   },
   "keywords": [
     "salao",
