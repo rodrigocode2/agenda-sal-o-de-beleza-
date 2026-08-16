@@ -158,8 +158,8 @@
 
       <!-- Botões de Ação do Usuário -->
       <div class="flex items-center gap-3">
-        <div id="role-indicator" class="hidden sm:flex text-xs px-3 py-1.5 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 font-medium items-center gap-1.5">
-          <i class="fa-solid fa-shield-halved text-xs"></i> Modo Estabelecimento
+        <div id="user-display" class="hidden sm:flex text-xs px-3 py-1.5 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 font-medium items-center gap-1.5">
+          <i class="fa-solid fa-envelope text-xs"></i> <span id="lbl-email-usuario">nao_logado</span>
         </div>
         <button onclick="switchTab('aba1')" class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition-all shadow-lg shadow-brand-500/25 active:scale-95 flex items-center gap-2">
           <i class="fa-solid fa-user"></i> Entrar
@@ -282,12 +282,12 @@
             <i class="fa-solid fa-lock"></i>
           </div>
           <h2 class="text-2xl font-black text-white">Acesse o Sistema</h2>
-          <p class="text-xs text-slate-400">Digite suas credenciais de administrador ou profissional</p>
+          <p class="text-xs text-slate-400">Seu e-mail será utilizado para recuperar e salvar seus agendamentos</p>
         </div>
         <form onsubmit="processarLogin(event)" class="space-y-4">
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1.5">E-mail Cadastrado</label>
-            <input type="email" placeholder="seu@email.com" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+            <input id="login-email" type="email" placeholder="seu@email.com" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1.5">Senha de Acesso</label>
@@ -308,7 +308,7 @@
         <div onclick="confirmarEAlternarPerfil('estabelecimento')" class="glass-panel glass-panel-hover rounded-3xl p-6 border border-slate-800 cursor-pointer space-y-4">
           <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-400 flex items-center justify-center text-xl"><i class="fa-solid fa-building"></i></div>
           <h3 class="text-base font-bold text-white">Visão do Estabelecimento</h3>
-          <p class="text-xs text-slate-400">Acompanhamento completo de todas as 15 colunas da equipe em tempo real.</p>
+          <p class="text-xs text-slate-400">Acompanhamento completo de todas as colunas da equipe em tempo real.</p>
         </div>
         <div onclick="confirmarEAlternarPerfil('profissional')" class="glass-panel glass-panel-hover rounded-3xl p-6 border border-slate-800 cursor-pointer space-y-4">
           <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl"><i class="fa-solid fa-user-scissors"></i></div>
@@ -401,20 +401,24 @@
             <input id="cliente-nome" type="text" placeholder="Ex: Maria Oliveira" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
           </div>
           <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">E-mail do Cliente / Responsável *</label>
+            <input id="cliente-email" type="email" placeholder="cliente@email.com" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+          </div>
+          <div>
             <label class="block text-xs font-medium text-slate-300 mb-1.5">Descrição do Serviço *</label>
             <input id="cliente-servico" type="text" placeholder="Ex: Corte, Escova e Hidratação" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
           </div>
-          <button type="submit" class="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-lg shadow-brand-500/25 transition-all">Confirmar e Salvar na Agenda</button>
+          <button type="submit" class="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-lg shadow-brand-500/25 transition-all">Confirmar e Salvar no LocalStorage</button>
         </form>
       </div>
     </section>
 
   </main>
 
-  <!-- LÓGICA JAVASCRIPT EM LOTE -->
+  <!-- LÓGICA JAVASCRIPT COM LOCALSTORAGE PERSISTENTE -->
   <script>
-    // Banco de Dados Dinâmico dos Estabelecimentos
-    const estabelecimentosDB = {
+    // Banco de Dados Inicial Padrão de Estabelecimentos
+    const dadosIniciaisEstabelecimentos = {
       "SALAO-8921": {
         id: "SALAO-8921",
         nome: "HairConcept - Unidade Central",
@@ -447,18 +451,69 @@
       }
     };
 
-    // Perfil do Usuário Logado
-    const usuarioLogado = {
+    // Perfil Padrão do Usuário
+    let usuarioLogado = {
       id: "rodrigocode2",
       nome: "Rodrigo",
+      email: "rodrigo@hairconcept.com",
       estabelecimentosVinculados: ["SALAO-8921", "SALAO-4412"],
       estabelecimentoAtivoId: "SALAO-8921"
     };
 
-    // Grade de Horários Disponíveis
+    let estabelecimentosDB = {};
+    let agendamentosDB = {}; // Estrutura de agendamentos por e-mail e chave única
+
+    // Lista de Horários Disponíveis
     const listaHorarios = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
 
-    // Gerenciador de Navegação por Abas
+    // FUNÇÕES DE GERENCIAMENTO DE LOCALSTORAGE
+    function carregarDadosDoLocalStorage() {
+      // 1. Carregar Estabelecimentos
+      const estSalvos = localStorage.getItem('hc_estabelecimentos');
+      if (estSalvos) {
+        estabelecimentosDB = JSON.parse(estSalvos);
+      } else {
+        estabelecimentosDB = dadosIniciaisEstabelecimentos;
+        salvarEstabelecimentosNoLocalStorage();
+      }
+
+      // 2. Carregar Usuário Ativo Salvo
+      const userSalvo = localStorage.getItem('hc_usuario_ativo');
+      if (userSalvo) {
+        usuarioLogado = JSON.parse(userSalvo);
+      } else {
+        salvarUsuarioNoLocalStorage();
+      }
+
+      // 3. Carregar Agendamentos
+      const agendamentosSalvos = localStorage.getItem('hc_agendamentos');
+      if (agendamentosSalvos) {
+        agendamentosDB = JSON.parse(agendamentosSalvos);
+      } else {
+        agendamentosDB = {};
+        salvarAgendamentosNoLocalStorage();
+      }
+
+      // Atualizar E-mail na Interface
+      const lblEmail = document.getElementById('lbl-email-usuario');
+      if (lblEmail) lblEmail.textContent = usuarioLogado.email;
+    }
+
+    function salvarEstabelecimentosNoLocalStorage() {
+      localStorage.setItem('hc_estabelecimentos', JSON.stringify(estabelecimentosDB));
+    }
+
+    function salvarUsuarioNoLocalStorage() {
+      localStorage.setItem('hc_usuario_ativo', JSON.stringify(usuarioLogado));
+      const lblEmail = document.getElementById('lbl-email-usuario');
+      if (lblEmail) lblEmail.textContent = usuarioLogado.email;
+    }
+
+    function salvarAgendamentosNoLocalStorage() {
+      localStorage.setItem('hc_agendamentos', JSON.stringify(agendamentosDB));
+    }
+
+    // NAVEGAÇÃO DE ABAS
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -476,18 +531,28 @@
       }
     }
 
-    // Processamento de Autenticação
+    // PROCESSAMENTO DE LOGIN COM USO DO E-MAIL COMO CHAVE
     function processarLogin(e) {
       e.preventDefault();
-      switchTab('aba2');
+      const emailDigitado = document.getElementById('login-email').value.trim().toLowerCase();
+
+      if (emailDigitado) {
+        usuarioLogado.email = emailDigitado;
+        
+        // Auto-preenche o e-mail no formulário de agendamento também
+        const campoEmailCliente = document.getElementById('cliente-email');
+        if (campoEmailCliente) campoEmailCliente.value = emailDigitado;
+
+        salvarUsuarioNoLocalStorage();
+        switchTab('aba2');
+      }
     }
 
-    // Confirmação de Perfil e Troca de Tela
     function confirmarEAlternarPerfil(perfil) {
       switchTab('aba3');
     }
 
-    // Atualização e Renderização do Seletor do Estabelecimento
+    // SELETOR E AÇÕES DO ESTABELECIMENTO
     function atualizarSeletorEstabelecimentos() {
       const select = document.getElementById('select-estabelecimento-ativo');
       if (!select) return;
@@ -507,15 +572,14 @@
       document.getElementById('codigo-salao-exibicao').textContent = usuarioLogado.estabelecimentoAtivoId;
     }
 
-    // Troca do Estabelecimento Selecionado
     function alterarEstabelecimentoAtivo(novoCodigo) {
       usuarioLogado.estabelecimentoAtivoId = novoCodigo;
+      salvarUsuarioNoLocalStorage();
       document.getElementById('codigo-salao-exibicao').textContent = novoCodigo;
       renderizarGridAgenda();
       atualizarSelectFormularioAgendamento();
     }
 
-    // Vincular Profissional a um Novo Salão por Código
     function solicitarCodigoVincular() {
       const codigoDigitado = prompt("Digite o Código do Estabelecimento que deseja se vincular (Ex: SALAO-4412):");
       if (!codigoDigitado) return;
@@ -526,11 +590,15 @@
         if (!usuarioLogado.estabelecimentosVinculados.includes(codigoUpper)) {
           usuarioLogado.estabelecimentosVinculados.push(codigoUpper);
           
-          // Adiciona o profissional na lista do salão
-          estabelecimentosDB[codigoUpper].profissionais.push({
-            id: usuarioLogado.id,
-            nome: `${estabelecimentosDB[codigoUpper].profissionais.length + 1}. ${usuarioLogado.nome} (Atendimento)`
-          });
+          // Adiciona o usuário atual na lista do salão se ainda não estiver
+          const jaExisteNaLista = estabelecimentosDB[codigoUpper].profissionais.some(p => p.id === usuarioLogado.id);
+          if (!jaExisteNaLista) {
+            estabelecimentosDB[codigoUpper].profissionais.push({
+              id: usuarioLogado.id,
+              nome: `${estabelecimentosDB[codigoUpper].profissionais.length + 1}. ${usuarioLogado.nome}`
+            });
+            salvarEstabelecimentosNoLocalStorage();
+          }
 
           alterarEstabelecimentoAtivo(codigoUpper);
           atualizarSeletorEstabelecimentos();
@@ -543,7 +611,6 @@
       }
     }
 
-    // Atualiza o Select do Formulário de Agendamento conforme os Profissionais do Salão Ativo
     function atualizarSelectFormularioAgendamento() {
       const selectForm = document.getElementById('agendamento-profissional');
       if (!selectForm) return;
@@ -561,22 +628,23 @@
       }
     }
 
-    // Renderizador Dinâmico do Cabeçalho e da Grade da Agenda
+    // RENDERIZAÇÃO DA GRADE COM CARREGAMENTO DO LOCALSTORAGE
     function renderizarGridAgenda() {
       const headerRow = document.getElementById('grid-header-row');
       const tbody = document.getElementById('grid-horarios-body');
       if (!tbody || !headerRow) return;
 
-      const salaoAtivo = estabelecimentosDB[usuarioLogado.estabelecimentoAtivoId];
+      const salaoAtivoId = usuarioLogado.estabelecimentoAtivoId;
+      const salaoAtivo = estabelecimentosDB[salaoAtivoId];
       if (!salaoAtivo) return;
 
-      // Monta o Cabeçalho da Tabela
+      // Cabeçalho da Tabela
       headerRow.innerHTML = `<th class="py-3 px-4 w-24 sticky-time-col">Horário</th>`;
       salaoAtivo.profissionais.forEach(prof => {
         headerRow.innerHTML += `<th class="py-3 px-4 min-w-[150px]">${prof.nome}</th>`;
       });
 
-      // Monta as Linhas do Corpo da Tabela
+      // Corpo da Tabela
       tbody.innerHTML = '';
       listaHorarios.forEach(hora => {
         const horaFormatada = hora.replace(':', '-');
@@ -585,7 +653,25 @@
         let htmlRow = `<td class="py-3 px-4 font-mono font-semibold text-slate-400 sticky-time-col">${hora}</td>`;
         
         salaoAtivo.profissionais.forEach(prof => {
-          htmlRow += `<td id="slot-${prof.id}-${horaFormatada}" class="py-2 px-3 border-l border-slate-800/40"><div class="text-slate-600 italic text-[11px]">Disponível</div></td>`;
+          const slotKey = `${salaoAtivoId}_${prof.id}_${horaFormatada}`;
+          const agendamento = agendamentosDB[slotKey];
+
+          if (agendamento) {
+            htmlRow += `
+              <td class="py-2 px-3 border-l border-slate-800/40">
+                <div class="bg-slate-800/90 border-l-4 border-brand-500 p-2 rounded-r-xl shadow-md relative group">
+                  <span class="font-bold text-slate-100 block truncate">${agendamento.cliente}</span>
+                  <span class="text-[10px] text-brand-400 block truncate"><i class="fa-solid fa-scissors"></i> ${agendamento.servico}</span>
+                  <span class="text-[9px] text-slate-400 block truncate" title="${agendamento.email}"><i class="fa-solid fa-envelope"></i> ${agendamento.email}</span>
+                  <button onclick="removerAgendamento('${slotKey}')" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-400 text-xs p-1 transition-all" title="Cancelar Agendamento">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            `;
+          } else {
+            htmlRow += `<td class="py-2 px-3 border-l border-slate-800/40"><div class="text-slate-600 italic text-[11px]">Disponível</div></td>`;
+          }
         });
 
         tr.innerHTML = htmlRow;
@@ -593,32 +679,55 @@
       });
     }
 
-    // Manipulação e Registro de Agendamentos
+    // REGISTRO E SALVAMENTO NO LOCALSTORAGE POR EMAIL
     function cadastrarClienteEAgendar(e) {
       e.preventDefault();
       const prof = document.getElementById('agendamento-profissional').value;
       const hora = document.getElementById('agendamento-horario').value;
-      const cliente = document.getElementById('cliente-nome').value;
-      const servico = document.getElementById('cliente-servico').value;
+      const cliente = document.getElementById('cliente-nome').value.trim();
+      const emailCliente = document.getElementById('cliente-email').value.trim().toLowerCase();
+      const servico = document.getElementById('cliente-servico').value.trim();
+      const salaoAtivoId = usuarioLogado.estabelecimentoAtivoId;
 
-      const slotId = `slot-${prof}-${hora}`;
-      const slotElement = document.getElementById(slotId);
+      const slotKey = `${salaoAtivoId}_${prof}_${hora}`;
 
-      if (slotElement) {
-        slotElement.innerHTML = `
-          <div class="bg-slate-800/90 border-l-4 border-brand-500 p-2 rounded-r-xl shadow-md">
-            <span class="font-bold text-slate-100 block truncate">${cliente}</span>
-            <span class="text-[10px] text-brand-400 block truncate"><i class="fa-solid fa-scissors"></i> ${servico}</span>
-          </div>
-        `;
-      }
+      // Salva no objeto local
+      agendamentosDB[slotKey] = {
+        salaoId: salaoAtivoId,
+        profissionalId: prof,
+        horario: hora,
+        cliente: cliente,
+        email: emailCliente,
+        servico: servico,
+        criadoEm: new Date().toISOString()
+      };
 
+      // Persiste no LocalStorage
+      salvarAgendamentosNoLocalStorage();
+
+      // Recarrega a grade e limpa o formulário
+      renderizarGridAgenda();
       document.getElementById('form-cadastro-cliente').reset();
+      
+      // Mantém o e-mail do usuário logado preenchido para o próximo cadastro
+      document.getElementById('cliente-email').value = usuarioLogado.email;
+
+      alert("Agendamento salvo com sucesso no LocalStorage!");
       switchTab('aba3');
     }
 
-    // Inicialização da Aplicação
+    // CANCELAR / REMOVER AGENDAMENTO DO LOCALSTORAGE
+    function removerAgendamento(slotKey) {
+      if (confirm("Deseja realmente cancelar este agendamento?")) {
+        delete agendamentosDB[slotKey];
+        salvarAgendamentosNoLocalStorage();
+        renderizarGridAgenda();
+      }
+    }
+
+    // INICIALIZAÇÃO DA APLICAÇÃO
     document.addEventListener('DOMContentLoaded', () => {
+      carregarDadosDoLocalStorage();
       atualizarSeletorEstabelecimentos();
       atualizarSelectFormularioAgendamento();
       renderizarGridAgenda();
