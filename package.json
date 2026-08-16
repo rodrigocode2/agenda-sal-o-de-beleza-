@@ -1,0 +1,28 @@
+{
+  "name": "hairconcept-backend",
+  "version": "1.0.0",
+  "description": "Backend para HairConcept - Sistema de Agendamento para Salões",
+  "main": "backend-server.example.js",
+  "scripts": {
+    "start": "node backend-server.example.js",
+    "dev": "nodemon backend-server.example.js"
+  },
+  "keywords": [
+    "salao",
+    "agendamento",
+    "stripe",
+    "firebase"
+  ],
+  "author": "Seu Nome",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "stripe": "^12.0.0",
+    "firebase-admin": "^11.0.0",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}

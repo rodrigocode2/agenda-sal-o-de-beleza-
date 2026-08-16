@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HairConcept - Gestão para Salões & Barbearias</title>
+
+  <!-- Tailwind CSS & FontAwesome Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+  
+  <!-- Stripe -->
+  <script src="https://js.stripe.com/v3/"></script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .agenda-scroll::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    .agenda-scroll::-webkit-scrollbar-track {
+      background: #020617;
+    }
+    .agenda-scroll::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .loading-spinner {
+      border: 3px solid rgba(241, 5, 90, 0.2);
+      border-top: 3px solid #f10556;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-12">
+
+  <!-- ========================================== -->
+  <!-- MODAL DE LOADING -->
+  <!-- ========================================== -->
+  <div id="loading-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="text-center">
+      <div class="loading-spinner mx-auto mb-4"></div>
+      <p class="text-sm text-slate-300" id="loading-text">Carregando...</p>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PÁGINA DE BOAS-VINDAS (Não Logado) -->
+  <!-- ========================================== -->
+  <div id="landing-page" class="hidden min-h-screen">
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 py-4">
+      <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center font-bold text-slate-950 shadow-lg shadow-pink-500/20">
+            <i class="fa-solid fa-scissors text-sm"></i>
+          </div>
+          <span class="font-bold tracking-tight">HairConcept <small class="text-xs text-pink-400 font-normal">[Gestão Premium]</small></span>
+        </div>
+        <button onclick="goToLoginMode('login')" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-2 rounded-lg text-sm transition-all">
+          Entrar
+        </button>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
+      <!-- HERO SECTION -->
+      <section class="py-16 text-center">
+        <h1 class="text-5xl md:text-6xl font-extrabold text-white mb-4">
+          Sua Agenda de Salão <span class="text-pink-500">Organizada</span>
+        </h1>
+        <p class="text-xl text-slate-400 max-w-2xl mx-auto mb-8">
+          Gerenciamento completo de agendamentos, clientes e equipe. Tudo que você precisa para fazer seu salão prosperar.
+        </p>
+        <button onclick="goToLoginMode('signup')" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-8 py-4 rounded-lg text-lg transition-all shadow-lg shadow-pink-500/30">
+          Começar Teste Gratuito
+        </button>
+      </section>
+
+      <!-- PLANOS -->
+      <section class="py-16">
+        <h2 class="text-3xl font-bold text-center mb-12">Planos Simples e Diretos</h2>
+        
+        <div class="grid md:grid-cols-3 gap-6">
+          <!-- Plano Gratuito -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 hover:border-slate-700 transition-all">
+            <h3 class="text-2xl font-bold mb-2">Plano Gratuito</h3>
+            <p class="text-slate-400 mb-6">Para começar</p>
+            <div class="text-3xl font-bold mb-6">R$ 0<span class="text-sm text-slate-400">/mês</span></div>
+            <ul class="space-y-3 mb-8 text-sm">
+              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Até 50 agendamentos/mês</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> 1 profissional</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-xmark text-slate-600"></i> Histórico limitado</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-xmark text-slate-600"></i> Suporte por email</li>
+            </ul>
+            <button onclick="goToLoginMode('signup')" class="w-full bg-slate-950 border border-slate-800 hover:bg-slate-800 text-white font-semibold py-2 rounded-lg transition-all">
+              Começar Grátis
+            </button>
+          </div>
+
+          <!-- Plano Pro (Destaque) -->
+          <div class="bg-gradient-to-br from-pink-600/20 to-purple-600/10 border border-pink-500/30 rounded-2xl p-8 shadow-2xl shadow-pink-500/10 relative md:scale-105">
+            <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-pink-500 text-white px-4 py-1 rounded-full text-xs font-bold">
+              MAIS POPULAR
+            </div>
+            <h3 class="text-2xl font-bold mb-2">Plano Pro</h3>
+            <p class="text-slate-400 mb-6">Para salões em crescimento</p>
+            <div class="text-3xl font-bold mb-6">R$ 19,99<span class="text-sm text-slate-400">/mês</span></div>
+            <ul class="space-y-3 mb-8 text-sm">
+              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Agendamentos ilimitados</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Até 5 profissionais</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Histórico completo</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Suporte prioritário</li>
+            </ul>
+            <button onclick="goToLoginMode('signup')" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-pink-500/20">
+              Começar Agora
+            </button>
+          </div>
+
+          <!-- Plano Enterprise -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 hover:border-slate-700 transition-all">
+            <h3 class="text-2xl font-bold mb-2">Plano Enterprise</h3>
+            <p class="text-slate-400 mb-6">Para redes de salões</p>
+            <div class="text-3xl font-bold mb-6">Personalizado</div>
+            <ul class="space-y-3 mb-8 text-sm">
+              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Tudo do Pro</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Profissionais ilimitados</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Relatórios avançados</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Suporte 24/7</li>
+            </ul>
+            <button onclick="alert('Entre em contato: contato@hairconcept.com')" class="w-full bg-slate-950 border border-slate-800 hover:bg-slate-800 text-white font-semibold py-2 rounded-lg transition-all">
+              Solicitar Demo
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TELA DE AUTENTICAÇÃO -->
+  <!-- ========================================== -->
+  <div id="auth-page" class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <!-- Login Form -->
+      <div id="login-form" class="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
+        <div class="flex items-center gap-2 mb-6 cursor-pointer" onclick="showLanding()">
+          <div class="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center font-bold text-slate-950">
+            <i class="fa-solid fa-scissors text-sm"></i>
+          </div>
+          <span class="font-bold">HairConcept</span>
+        </div>
+
+        <h2 class="text-2xl font-bold mb-2">Bem-vindo de volta</h2>
+        <p class="text-slate-400 text-sm mb-6">Faça login para acessar sua agenda</p>
+
+        <form onsubmit="loginWithEmail(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">E-mail</label>
+            <input id="login-email" type="email" required placeholder="seu@email.com" 
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Senha</label>
+            <input id="login-password" type="password" required placeholder="••••••••"
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
+          </div>
+
+          <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-xl transition-all">
+            Entrar
+          </button>
+        </form>
+
+        <div class="mt-6 text-center">
+          <p class="text-sm text-slate-400">Não tem conta? <button onclick="goToLoginMode('signup')" class="text-pink-400 hover:text-pink-300 font-semibold">Criar uma</button></p>
+        </div>
+      </div>
+
+      <!-- Signup Form -->
+      <div id="signup-form" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
+        <div class="flex items-center gap-2 mb-6 cursor-pointer" onclick="showLanding()">
+          <div class="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center font-bold text-slate-950">
+            <i class="fa-solid fa-scissors text-sm"></i>
+          </div>
+          <span class="font-bold">HairConcept</span>
+        </div>
+
+        <h2 class="text-2xl font-bold mb-2">Criar uma nova conta</h2>
+        <p class="text-slate-400 text-sm mb-6">Comece sua experiência gratuitamente</p>
+
+        <form onsubmit="signupWithEmail(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Nome do Salão</label>
+            <input id="signup-salon-name" type="text" required placeholder="Meu Salão"
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">E-mail</label>
+            <input id="signup-email" type="email" required placeholder="seu@email.com"
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Senha</label>
+            <input id="signup-password" type="password" required placeholder="••••••••"
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
+          </div>
+
+          <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-xl transition-all">
+            Criar Conta Gratuita
+          </button>
+        </form>
+
+        <div class="mt-6 text-center">
+          <p class="text-sm text-slate-400">Já tem conta? <button onclick="goToLoginMode('login')" class="text-pink-400 hover:text-pink-300 font-semibold">Entrar</button></p>
+        </div>
+      </div>
+
+      <!-- Planos de Upgrade -->
+      <div id="plans-form" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
+        <div class="flex items-center gap-2 mb-6 cursor-pointer" onclick="showLanding()">
+          <div class="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center font-bold text-slate-950">
+            <i class="fa-solid fa-scissors text-sm"></i>
+          </div>
+          <span class="font-bold">HairConcept</span>
+        </div>
+
+        <h2 class="text-2xl font-bold mb-2">Escolha seu plano</h2>
+        <p class="text-slate-400 text-sm mb-6">Sua conta foi criada! Agora selecione o plano.</p>
+
+        <div class="space-y-4">
+          <button onclick="selectPlan('free')" class="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl transition-all text-left p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-bold">Plano Gratuito</div>
+                <div class="text-xs text-slate-400">R$ 0/mês - Teste primeiro</div>
+              </div>
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+          </button>
+
+          <button onclick="selectPlan('pro')" class="w-full bg-gradient-to-r from-pink-500/20 to-pink-600/20 border border-pink-500/50 hover:border-pink-500 text-white font-semibold py-3 rounded-xl transition-all text-left p-4 shadow-lg shadow-pink-500/10">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-bold">Plano Pro</div>
+                <div class="text-xs text-pink-300">R$ 19,99/mês - Começar agora</div>
+              </div>
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+          </button>
+        </div>
+
+        <button onclick="goToLoginMode('login')" class="mt-6 w-full text-slate-400 hover:text-slate-300 text-sm">
+          Voltar
+        </button>
+      </div>
+
+      <!-- Checkout Stripe -->
+      <div id="checkout-form" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
+        <button onclick="goToLoginMode('plans')" class="text-pink-400 hover:text-pink-300 mb-4 flex items-center gap-1 text-sm">
+          <i class="fa-solid fa-arrow-left"></i> Voltar
+        </button>
+
+        <h2 class="text-2xl font-bold mb-2">Confirmar Pagamento</h2>
+        <p class="text-slate-400 text-sm mb-6">R$ 19,99/mês - Seu primeiro mês</p>
+
+        <form onsubmit="processPayment(event)" class="space-y-4">
+          <div id="card-element" class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm" style="height: 55px;"></div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Nome</label>
+            <input id="card-name" type="text" required placeholder="Seu nome"
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-pink-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">CPF</label>
+              <input id="card-cpf" type="text" required placeholder="000.000.000-00"
+                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-pink-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Telefone</label>
+              <input id="card-phone" type="tel" required placeholder="(61) 99999-0000"
+                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-pink-500">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-xl transition-all">
+            Ativar Assinatura
+          </button>
+        </form>
+
+        <p class="text-xs text-slate-500 text-center mt-4">
+          Você pode cancelar a qualquer momento. Sem taxas ocultas.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- APLICATIVO PRINCIPAL -->
+  <!-- ========================================== -->
+  <div id="app-page" class="hidden">
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 py-3">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center font-bold text-slate-950">
+            <i class="fa-solid fa-scissors text-sm"></i>
+          </div>
+          <span class="font-bold tracking-tight">HairConcept</span>
+        </div>
+
+        <nav class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs md:text-sm">
+          <button onclick="switchAppTab('dashboard')" id="tab-dashboard" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-100 transition-all">
+            <i class="fa-solid fa-chart-line mr-1"></i> Dashboard
+          </button>
+          <button onclick="switchAppTab('agenda')" id="tab-agenda" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-100 transition-all">
+            <i class="fa-solid fa-calendar-days mr-1"></i> Agenda
+          </button>
+          <button onclick="switchAppTab('settings')" id="tab-settings" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-100 transition-all">
+            <i class="fa-solid fa-gear mr-1"></i> Configurações
+          </button>
+          <button onclick="logoutUser()" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-100 transition-all ml-2">
+            <i class="fa-solid fa-sign-out-alt mr-1"></i> Sair
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-6">
+      <!-- DASHBOARD -->
+      <section id="dashboard" class="tab-content space-y-6">
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-slate-400 text-sm font-medium">Status da Assinatura</h3>
+              <i class="fa-solid fa-check-circle text-emerald-500 text-xl"></i>
+            </div>
+            <p id="subscription-status" class="text-2xl font-bold">Plano Gratuito</p>
+            <p id="subscription-date" class="text-xs text-slate-400 mt-1">Válido até: --</p>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-slate-400 text-sm font-medium">Total de Agendamentos</h3>
+              <i class="fa-solid fa-calendar text-pink-500 text-xl"></i>
+            </div>
+            <p id="total-bookings" class="text-2xl font-bold">0</p>
+            <p class="text-xs text-slate-400 mt-1">Este mês</p>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-slate-400 text-sm font-medium">Receita (Estimada)</h3>
+              <i class="fa-solid fa-dollar text-purple-500 text-xl"></i>
+            </div>
+            <p id="total-revenue" class="text-2xl font-bold">R$ 0,00</p>
+            <p class="text-xs text-slate-400 mt-1">Este mês</p>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-pink-600/20 to-purple-600/10 border border-pink-500/30 rounded-2xl p-8 text-center">
+          <h3 class="text-2xl font-bold mb-2">Upgrade para Pro</h3>
+          <p class="text-slate-300 mb-4">Acesso ilimitado por apenas R$ 19,99/mês</p>
+          <button onclick="goToLoginMode('checkout')" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-8 py-3 rounded-lg transition-all shadow-lg shadow-pink-500/20">
+            Começar Agora
+          </button>
+        </div>
+      </section>
+
+      <!-- AGENDA -->
+      <section id="agenda" class="tab-content hidden space-y-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-xl p-1">
+              <button class="p-2 hover:bg-slate-800 rounded-lg text-slate-400">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
+              </button>
+              <span id="agenda-date" class="text-xs font-semibold px-3 text-slate-200">Hoje</span>
+              <button class="p-2 hover:bg-slate-800 rounded-lg text-slate-400">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+              </button>
+            </div>
+          </div>
+          <button onclick="switchAppTab('dashboard')" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-4 py-2 rounded-lg text-xs">
+            <i class="fa-solid fa-plus mr-1"></i> Novo Agendamento
+          </button>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+          <div class="text-center text-slate-400 py-12">
+            <i class="fa-solid fa-calendar-check text-4xl mb-3 opacity-30"></i>
+            <p>Nenhum agendamento para hoje</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONFIGURAÇÕES -->
+      <section id="settings" class="tab-content hidden space-y-6 max-w-2xl">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <h3 class="text-lg font-bold mb-6">Configurações da Conta</h3>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-2">Nome do Salão</label>
+              <p id="salon-name-display" class="text-slate-100">--</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-2">E-mail</label>
+              <p id="email-display" class="text-slate-100">--</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-2">Plano Atual</label>
+              <p id="plan-display" class="text-slate-100">Gratuito</p>
+            </div>
+
+            <button onclick="logoutUser()" class="w-full bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 font-semibold py-2 rounded-lg transition-all mt-6">
+              Sair da Conta
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT -->
+  <!-- ========================================== -->
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyC_PLACEHOLDER", // Você precisa adicionar sua chave
+      authDomain: "hairconcept-PLACEHOLDER.firebaseapp.com",
+      projectId: "hairconcept-PLACEHOLDER",
+      storageBucket: "hairconcept-PLACEHOLDER.appspot.com",
+      messagingSenderId: "PLACEHOLDER",
+      appId: "PLACEHOLDER"
+    };
+
+    // Initialize Firebase (será ativado quando configurar)
+    let currentUser = null;
+    let currentPlan = 'free';
+
+    // ========================================== //
+    // NAVIGATION FUNCTIONS
+    // ========================================== //
+    function showLoading(text = 'Carregando...') {
+      document.getElementById('loading-modal').classList.remove('hidden');
+      document.getElementById('loading-text').textContent = text;
+    }
+
+    function hideLoading() {
+      document.getElementById('loading-modal').classList.add('hidden');
+    }
+
+    function showLanding() {
+      document.getElementById('landing-page').classList.remove('hidden');
+      document.getElementById('auth-page').classList.add('hidden');
+      document.getElementById('app-page').classList.add('hidden');
+    }
+
+    function showAuth() {
+      document.getElementById('landing-page').classList.add('hidden');
+      document.getElementById('auth-page').classList.remove('hidden');
+      document.getElementById('app-page').classList.add('hidden');
+    }
+
+    function showApp() {
+      document.getElementById('landing-page').classList.add('hidden');
+      document.getElementById('auth-page').classList.add('hidden');
+      document.getElementById('app-page').classList.remove('hidden');
+    }
+
+    function goToLoginMode(mode) {
+      document.getElementById('login-form').classList.toggle('hidden', mode !== 'login');
+      document.getElementById('signup-form').classList.toggle('hidden', mode !== 'signup');
+      document.getElementById('plans-form').classList.toggle('hidden', mode !== 'plans');
+      document.getElementById('checkout-form').classList.toggle('hidden', mode !== 'checkout');
+      
+      if (['login', 'signup', 'plans', 'checkout'].includes(mode)) {
+        showAuth();
+      }
+    }
+
+    // ========================================== //
+    // AUTH FUNCTIONS (Mock - Sem Firebase Real)
+    // ========================================== //
+    async function loginWithEmail(event) {
+      event.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      if (!email || !password) {
+        alert('Por favor, preencha todos os campos');
+        return;
+      }
+
+      showLoading('Entrando...');
+      setTimeout(() => {
+        hideLoading();
+        currentUser = { email, salonName: 'Meu Salão' };
+        updateDashboard();
+        showApp();
+      }, 1000);
+    }
+
+    async function signupWithEmail(event) {
+      event.preventDefault();
+      const salonName = document.getElementById('signup-salon-name').value;
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+
+      if (!salonName || !email || !password) {
+        alert('Por favor, preencha todos os campos');
+        return;
+      }
+
+      showLoading('Criando conta...');
+      setTimeout(() => {
+        hideLoading();
+        currentUser = { email, salonName };
+        currentPlan = 'free';
+        goToLoginMode('plans');
+      }, 1000);
+    }
+
+    function selectPlan(plan) {
+      currentPlan = plan;
+      if (plan === 'pro') {
+        goToLoginMode('checkout');
+      } else {
+        // Plano gratuito
+        updateDashboard();
+        showApp();
+      }
+    }
+
+    async function processPayment(event) {
+      event.preventDefault();
+      showLoading('Processando pagamento...');
+      
+      setTimeout(() => {
+        hideLoading();
+        currentPlan = 'pro';
+        alert('✅ Pagamento realizado com sucesso! Bem-vindo ao Plano Pro.');
+        updateDashboard();
+        showApp();
+      }, 2000);
+    }
+
+    function logoutUser() {
+      if (confirm('Deseja sair da sua conta?')) {
+        currentUser = null;
+        currentPlan = 'free';
+        showLanding();
+      }
+    }
+
+    // ========================================== //
+    // APP FUNCTIONS
+    // ========================================== //
+    function switchAppTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-pink-500', 'text-white');
+        btn.classList.add('text-slate-400');
+      });
+
+      const tab = document.getElementById(tabId);
+      if (tab) tab.classList.remove('hidden');
+
+      const btn = document.getElementById(`tab-${tabId}`);
+      if (btn) {
+        btn.classList.add('bg-pink-500', 'text-white');
+        btn.classList.remove('text-slate-400');
+      }
+    }
+
+    function updateDashboard() {
+      // Atualizar informações do usuário
+      if (currentUser) {
+        document.getElementById('salon-name-display').textContent = currentUser.salonName;
+        document.getElementById('email-display').textContent = currentUser.email;
+      }
+
+      const planName = currentPlan === 'pro' ? 'Plano Pro - R$ 19,99/mês' : 'Plano Gratuito';
+      document.getElementById('subscription-status').textContent = planName;
+      document.getElementById('plan-display').textContent = planName;
+
+      const today = new Date().toLocaleDateString('pt-BR');
+      document.getElementById('agenda-date').textContent = today;
+    }
+
+    // ========================================== //
+    // INICIALIZAÇÃO
+    // ========================================== //
+    document.addEventListener('DOMContentLoaded', () => {
+      showLanding();
+    });
+  </script>
+</body>
+</html>
