@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HairConcept [Beta] - Gestão para Salões & Barbearias</title>
+
+  <!-- Tailwind CSS & FontAwesome Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    /* Custom Scrollbar para a Agenda */
+    .agenda-scroll::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    .agenda-scroll::-webkit-scrollbar-track {
+      background: #020617;
+    }
+    .agenda-scroll::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-12">
+
+  <!-- ========================================== -->
+  <!-- CABEÇALHO E NAVEGAÇÃO                      -->
+  <!-- ========================================== -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 py-3">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      
+      <div class="flex items-center gap-2 cursor-pointer" onclick="switchTab('aba0')">
+        <div class="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center font-bold text-slate-950 shadow-lg shadow-pink-500/20">
+          <i class="fa-solid fa-scissors text-sm text-black"></i>
+        </div>
+        <span class="font-bold tracking-tight">Hairconcept <small class="text-xs text-pink-400 font-normal">[beta]</small></span>
+      </div>
+
+      <!-- NAVEGAÇÃO POR ABAS -->
+      <nav class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs md:text-sm overflow-x-auto max-w-full">
+        <button onclick="switchTab('aba0')" id="btn-aba0" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-100 transition-all whitespace-nowrap">0. Início</button>
+        <button onclick="switchTab('aba1')" id="btn-aba1" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-100 transition-all whitespace-nowrap">1. Login</button>
+        <button onclick="switchTab('aba2')" id="btn-aba2" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-100 transition-all whitespace-nowrap">2. Perfil</button>
+        <button onclick="switchTab('aba3')" id="btn-aba3" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-100 transition-all flex items-center gap-1.5 whitespace-nowrap">
+          <i class="fa-solid fa-calendar-days text-xs"></i> 3. Agenda
+        </button>
+        <button onclick="switchTab('aba4')" id="btn-aba4" class="tab-btn px-4 py-2 rounded-lg font-medium bg-pink-500 text-white font-semibold shadow transition-all flex items-center gap-1.5 whitespace-nowrap">
+          <i class="fa-solid fa-user-plus text-xs"></i> 4. Novo Agendamento
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="max-w-7xl mx-auto p-4 md:p-6 mt-2">
+
+    <!-- ========================================== -->
+    <!-- ABA 0 - PÁGINA INICIAL                     -->
+    <!-- ========================================== -->
+    <section id="aba0" class="tab-content hidden">
+      <div class="min-h-[75vh] flex items-center justify-center py-12 px-4 relative overflow-hidden">
+        <div class="relative w-full max-w-2xl bg-gradient-to-tr from-pink-600/20 via-purple-600/10 to-slate-900 border border-pink-500/30 rounded-3xl p-8 md:p-14 text-center shadow-2xl backdrop-blur-md flex flex-col items-center justify-center">
+          <span class="text-xs font-semibold uppercase tracking-[0.3em] text-pink-400 mb-2">Bem-Vindo</span>
+          <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-wider uppercase drop-shadow-md my-2">
+            Hairconcept <small class="text-pink-400 font-light text-xl">[beta]</small>
+          </h1>
+          <p class="text-slate-300 text-xs md:text-sm max-w-md mx-auto mt-3 leading-relaxed font-light">
+            Sua agenda organizada e seu salão no controle total. Otimize horários, simplifique o atendimento e ofereça acesso exclusivo para sua equipe.
+          </p>
+          <div class="mt-8">
+            <button onclick="switchTab('aba1')" class="border border-pink-500/50 bg-pink-500/20 hover:bg-pink-500 hover:text-white text-pink-300 font-semibold uppercase tracking-wider text-xs px-8 py-3.5 rounded-full transition-all duration-300 shadow-lg shadow-pink-500/20 flex items-center gap-2">
+              <span>Entre no seu Espaço</span>
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 1 - LOGIN                              -->
+    <!-- ========================================== -->
+    <section id="aba1" class="tab-content hidden">
+      <div class="min-h-[70vh] flex items-center justify-center py-6">
+        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+          
+          <div class="absolute -top-24 -right-24 w-48 h-48 bg-pink-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="text-center mb-6">
+            <div class="w-12 h-12 bg-pink-500/10 border border-pink-500/20 rounded-2xl flex items-center justify-center mx-auto mb-3 text-pink-400">
+              <i class="fa-solid fa-right-to-bracket text-xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-100">Acesse sua Conta</h2>
+            <p class="text-slate-400 text-xs mt-1">Insira suas credenciais para gerenciar seus agendamentos</p>
+          </div>
+
+          <form onsubmit="processarLogin(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">Perfil de Acesso</label>
+              <div class="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button type="button" id="login-type-admin" onclick="setLoginType('estabelecimento')" class="py-2 text-xs font-semibold rounded-lg bg-pink-500 text-white transition-all flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-store text-xs"></i> Salão / Gestor
+                </button>
+                <button type="button" id="login-type-prof" onclick="setLoginType('profissional')" class="py-2 text-xs font-medium text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-user-scissors text-xs"></i> Profissional
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label for="login-email" class="block text-xs font-medium text-slate-300 mb-1">E-mail ou Usuário</label>
+              <div class="relative">
+                <i class="fa-regular fa-envelope absolute left-3.5 top-3.5 text-slate-500 text-xs"></i>
+                <input id="login-email" type="email" required placeholder="seu@email.com" value="rodrigocode2@email.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label for="login-password" class="block text-xs font-medium text-slate-300">Senha</label>
+                <button type="button" class="text-xs text-pink-400 hover:underline bg-transparent border-0">Esqueceu a senha?</button>
+              </div>
+              <div class="relative">
+                <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-500 text-xs"></i>
+                <input id="login-password" type="password" required value="123456" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
+                <i id="toggle-password" onclick="togglePasswordVisibility('login-password', 'toggle-password')" class="fa-regular fa-eye absolute right-3.5 top-3.5 text-slate-500 text-xs cursor-pointer hover:text-slate-300"></i>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 py-1">
+              <input type="checkbox" id="remember" checked class="rounded bg-slate-950 border-slate-800 text-pink-500 focus:ring-0 cursor-pointer">
+              <label for="remember" class="text-xs text-slate-400 cursor-pointer select-none">Lembrar-me neste dispositivo</label>
+            </div>
+
+            <button type="submit" id="btn-submit-login" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded-xl text-xs transition-all shadow-lg shadow-pink-500/20 flex items-center justify-center gap-2">
+              <span>Entrar na Conta</span> <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+          </form>
+
+          <div class="mt-6 pt-4 border-t border-slate-800 text-center">
+            <p class="text-xs text-slate-400 mb-2">Ainda não possui cadastro?</p>
+            <button onclick="switchTab('aba2')" class="w-full bg-slate-950 hover:bg-slate-800 border border-slate-800 text-pink-400 font-semibold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2">
+              <i class="fa-solid fa-user-plus text-xs"></i> Escolher Perfil / Criar Conta
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 2 - PERFIL / SELEÇÃO DE MODO           -->
+    <!-- ========================================== -->
+    <section id="aba2" class="tab-content hidden">
+      <div class="min-h-[70vh] flex flex-col items-center justify-center py-6">
+        
+        <div id="usuario-status-card" class="mb-8 w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center font-bold text-sm border border-pink-500/30">
+              R
+            </div>
+            <div>
+              <h4 class="text-xs font-bold text-slate-100" id="user-logged-name">Rodrigo Nunes (rodrigocode2)</h4>
+              <p class="text-xs text-slate-400">Sessão ativa • Escolha o modo de navegação do painel</p>
+            </div>
+          </div>
+          <button onclick="switchTab('aba1')" class="text-xs bg-slate-950 hover:bg-slate-800 text-slate-400 border border-slate-800 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i> Sair
+          </button>
+        </div>
+
+        <div class="text-center max-w-xl mb-8">
+          <span class="text-pink-400 font-medium text-xs tracking-wider uppercase">Modo de Acesso</span>
+          <h2 class="text-3xl font-bold text-slate-100 mt-1">Como você deseja acessar hoje?</h2>
+          <p class="text-slate-400 text-xs mt-2">Selecione a visualização ideal para suas tarefas no momento.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 w-full max-w-3xl">
+          <div onclick="confirmarEAlternarPerfil('estabelecimento')" class="group relative bg-slate-900 border border-slate-800 hover:border-pink-500/60 rounded-3xl p-6 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:shadow-pink-500/10 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-pink-500/10 border border-pink-500/20 text-pink-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                  <i class="fa-solid fa-store"></i>
+                </div>
+                <span class="text-xs bg-pink-500/10 text-pink-400 border border-pink-500/20 px-2.5 py-1 rounded-full font-semibold uppercase">Administrativo</span>
+              </div>
+              <h3 class="text-xl font-bold text-slate-100 group-hover:text-pink-400 transition-colors">Salão / Gestor</h3>
+              <p class="text-xs text-slate-400 mt-2 leading-relaxed">Visão completa da operação. Ideal para gerentes acompanharem múltiplos profissionais simultaneamente.</p>
+              
+              <ul class="mt-4 space-y-2 text-xs text-slate-300 border-t border-slate-800/80 pt-4">
+                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400 text-xs"></i> Agenda geral de toda a equipe</li>
+                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400 text-xs"></i> Gestão de horários de múltiplos atendentes</li>
+                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400 text-xs"></i> Acesso total ao cadastro de clientes</li>
+              </ul>
+            </div>
+
+            <button class="w-full mt-6 bg-slate-950 border border-slate-800 group-hover:bg-pink-500 group-hover:text-white text-slate-300 font-semibold py-3 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-md">
+              Acessar Painel Geral <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+          </div>
+
+          <div onclick="confirmarEAlternarPerfil('profissional')" class="group relative bg-slate-900 border border-slate-800 hover:border-purple-500/60 rounded-3xl p-6 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:shadow-purple-500/10 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                  <i class="fa-solid fa-user-scissors"></i>
+                </div>
+                <span class="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2.5 py-1 rounded-full font-semibold uppercase">Operacional</span>
+              </div>
+              <h3 class="text-xl font-bold text-slate-100 group-hover:text-purple-400 transition-colors">Profissional Individual</h3>
+              <p class="text-xs text-slate-400 mt-2 leading-relaxed">Visão focada na sua rotina diária. Acompanhe apenas os seus atendimentos agendados sem distrações.</p>
+              
+              <ul class="mt-4 space-y-2 text-xs text-slate-300 border-t border-slate-800/80 pt-4">
+                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400 text-xs"></i> Agenda individual personalizada</li>
+                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400 text-xs"></i> Foco nos horários do seu turno</li>
+                <li class="flex items-center gap-2"><i class="fa-solid fa-lock text-amber-400 text-xs"></i> Restrição de acesso aos outros colaboradores</li>
+              </ul>
+            </div>
+
+            <button class="w-full mt-6 bg-slate-950 border border-slate-800 group-hover:bg-purple-500 group-hover:text-white text-slate-300 font-semibold py-3 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-md">
+              Acessar Minha Agenda <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 3 - AGENDA                             -->
+    <!-- ========================================== -->
+    <section id="aba3" class="tab-content hidden">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-xl p-1">
+            <button class="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-100"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+            <span class="text-xs font-semibold px-3 text-slate-200">15 de Agosto, 2026</span>
+            <button class="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-100"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+          </div>
+          <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg font-medium">Hoje</span>
+        </div>
+
+        <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+          <span id="role-indicator" class="text-xs px-3 py-1.5 rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20 font-medium flex items-center gap-1.5">
+            <i class="fa-solid fa-shield-halved text-xs"></i> Modo Estabelecimento
+          </span>
+
+          <button onclick="switchTab('aba4')" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition-all shadow-md shadow-pink-500/20">
+            <i class="fa-solid fa-plus text-xs"></i> Novo Agendamento
+          </button>
+        </div>
+      </div>
+
+      <!-- TABELA DE HORÁRIOS COM HIGHLIGHT VISUAL MELHORADO -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto max-h-[70vh] agenda-scroll">
+          <table class="w-full text-left border-collapse min-w-[700px]">
+            <thead class="sticky top-0 bg-slate-950 z-10 border-b border-slate-800">
+              <tr class="text-xs font-semibold text-slate-400">
+                <th class="py-3.5 px-4 w-24 text-center border-r border-slate-800">Horário</th>
+                <th class="py-3.5 px-4 border-r border-slate-800">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-pink-500/20 text-pink-400 text-xs flex items-center justify-center font-bold border border-pink-500/30">R</div>
+                    <span class="text-slate-200">Rodrigo (Você)</span>
+                  </div>
+                </th>
+                <th class="py-3.5 px-4 border-r border-slate-800 professional-col">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 text-xs flex items-center justify-center font-bold border border-purple-500/30">A</div>
+                    <span class="text-slate-200">Ana Oliveira</span>
+                  </div>
+                </th>
+                <th class="py-3.5 px-4 professional-col">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs flex items-center justify-center font-bold border border-blue-500/30">J</div>
+                    <span class="text-slate-200">João Souza</span>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/60 text-xs">
+              
+              <!-- HORÁRIOS DA MANHÃ -->
+              <tr id="row-08-00">
+                <td class="py-3 px-2 text-center text-slate-400 font-mono border-r border-slate-800 bg-slate-950/40">08:00</td>
+                <td class="p-1.5 border-r border-slate-800/60" id="slot-rodrigo-08-00"></td>
+                <td class="p-1.5 border-r border-slate-800/60 professional-col" id="slot-ana-08-00"></td>
+                <td class="p-1.5 professional-col" id="slot-joao-08-00"></td>
+              </tr>
+
+              <tr id="row-08-30">
+                <td class="py-3 px-2 text-center text-slate-400 font-mono border-r border-slate-800 bg-slate-950/40">08:30</td>
+                <td class="p-1.5 border-r border-slate-800/60" id="slot-rodrigo-08-30">
+                  <div class="bg-slate-800/80 border-l-4 border-pink-500 p-2.5 rounded-r-xl shadow-md">
+                    <div class="flex justify-between items-start">
+                      <span class="font-bold text-slate-100">Maria Silva</span>
+                      <span class="text-xs font-semibold text-pink-400">R$ 80,00</span>
+                    </div>
+                    <p class="text-slate-300 text-xs mt-1 flex items-center gap-1">
+                      <i class="fa-solid fa-scissors text-pink-400 text-xs"></i> Corte de Cabelo
+                    </p>
+                  </div>
+                </td>
+                <td class="p-1.5 border-r border-slate-800/60 professional-col" id="slot-ana-08-30"></td>
+                <td class="p-1.5 professional-col" id="slot-joao-08-30">
+                  <div class="bg-slate-800/80 border-l-4 border-blue-500 p-2.5 rounded-r-xl shadow-md">
+                    <div class="flex justify-between items-start">
+                      <span class="font-bold text-slate-100">João Santos</span>
+                      <span class="text-xs font-semibold text-blue-400">R$ 150,00</span>
+                    </div>
+                    <p class="text-slate-300 text-xs mt-1 flex items-center gap-1">
+                      <i class="fa-solid fa-paint-roller text-blue-400 text-xs"></i> Coloração
+                    </p>
+                  </div>
+                </td>
+              </tr>
+
+              <tr id="row-09-00">
+                <td class="py-3 px-2 text-center text-slate-400 font-mono border-r border-slate-800 bg-slate-950/40">09:00</td>
+                <td class="p-1.5 border-r border-slate-800/60" id="slot-rodrigo-09-00"></td>
+                <td class="p-1.5 border-r border-slate-800/60 professional-col" id="slot-ana-09-00">
+                  <div class="bg-slate-800/80 border-l-4 border-purple-500 p-2.5 rounded-r-xl shadow-md">
+                    <div class="flex justify-between items-start">
+                      <span class="font-bold text-slate-100">Ana Oliveira</span>
+                      <span class="text-xs font-semibold text-purple-400">R$ 50,00</span>
+                    </div>
+                    <p class="text-slate-300 text-xs mt-1 flex items-center gap-1">
+                      <i class="fa-solid fa-wind text-purple-400 text-xs"></i> Escova
+                    </p>
+                  </div>
+                </td>
+                <td class="p-1.5 professional-col" id="slot-joao-09-00"></td>
+              </tr>
+
+              <tr id="row-09-30">
+                <td class="py-3 px-2 text-center text-slate-400 font-mono border-r border-slate-800 bg-slate-950/40">09:30</td>
+                <td class="p-1.5 border-r border-slate-800/60" id="slot-rodrigo-09-30"></td>
+                <td class="p-1.5 border-r border-slate-800/60 professional-col" id="slot-ana-09-30"></td>
+                <td class="p-1.5 professional-col" id="slot-joao-09-30"></td>
+              </tr>
+
+              <tr id="row-10-00">
+                <td class="py-3 px-2 text-center text-slate-400 font-mono border-r border-slate-800 bg-slate-950/40">10:00</td>
+                <td class="p-1.5 border-r border-slate-800/60" id="slot-rodrigo-10-00">
+                  <div class="bg-slate-800/80 border-l-4 border-pink-500 p-2.5 rounded-r-xl shadow-md">
+                    <div class="flex justify-between items-start">
+                      <span class="font-bold text-slate-100">Camila Rocha</span>
+                      <span class="text-xs font-semibold text-pink-400">R$ 120,00</span>
+                    </div>
+                    <p class="text-slate-300 text-xs mt-1 flex items-center gap-1">
+                      <i class="fa-solid fa-hand-sparkles text-pink-400 text-xs"></i> Manicure & Pedicure
+                    </p>
+                  </div>
+                </td>
+                <td class="p-1.5 border-r border-slate-800/60 professional-col" id="slot-ana-10-00"></td>
+                <td class="p-1.5 professional-col" id="slot-joao-10-00"></td>
+              </tr>
+
+              <tr id="row-10-30">
+                <td class="py-3 px-2 text-center text-slate-400 font-mono border-r border-slate-800 bg-slate-950/40">10:30</td>
+                <td class="p-1.5 border-r border-slate-800/60" id="slot-rodrigo-10-30"></td>
+                <td class="p-1.5 border-r border-slate-800/60 professional-col" id="slot-ana-10-30"></td>
+                <td class="p-1.5 professional-col" id="slot-joao-10-30"></td>
+              </tr>
+
+              <!-- ALMOÇO -->
+              <tr id="row-12-00" class="bg-slate-950/80">
+                <td class="py-2.5 px-2 text-center text-slate-500 font-mono border-r border-slate-800">12:00</td>
+                <td class="p-2 text-center text-slate-500 font-medium border-r border-slate-800/60">Intervalo de Almoço</td>
+                <td class="p-2 text-center text-slate-500 font-medium border-r border-slate-800/60 professional-col">Intervalo de Almoço</td>
+                <td class="p-2 text-center text-slate-500 font-medium professional-col">Intervalo de Almoço</td>
+              </tr>
+
+              <!-- HORÁRIOS DA TARDE -->
+              <tr id="row-13-00">
+                <td class="py-3 px-2 text-center text-slate-400 font-mono border-r border-slate-800 bg-slate-950/40">13:00</td>
+                <td class="p-1.5 border-r border-slate-800/60" id="slot-rodrigo-13-00"></td>
+                <td class="p-1.5 border-r border-slate-800/60 professional-col" id="slot-ana-13-00"></td>
+                <td class="p-1.5 professional-col" id="slot-joao-13-00"></td>
+              </tr>
+
+              <tr id="row-14-00">
+                <td class="py-3 px-2 text-center text-slate-400 font-mono border-r border-slate-800 bg-slate-950/40">14:00</td>
+                <td class="p-1.5 border-r border-slate-800/60" id="slot-rodrigo-14-00">
+                  <div class="bg-slate-800/80 border-l-4 border-pink-500 p-2.5 rounded-r-xl shadow-md">
+                    <div class="flex justify-between items-start">
+                      <span class="font-bold text-slate-100">Patrícia Alves</span>
+                      <span class="text-xs font-semibold text-pink-400">R$ 200,00</span>
+                    </div>
+                    <p class="text-slate-300 text-xs mt-1 flex items-center gap-1">
+                      <i class="fa-solid fa-wand-magic-sparkles text-pink-400 text-xs"></i> Mechas / Luzes
+                    </p>
+                  </div>
+                </td>
+                <td class="p-1.5 border-r border-slate-800/60 professional-col" id="slot-ana-14-00"></td>
+                <td class="p-1.5 professional-col" id="slot-joao-14-00"></td>
+              </tr>
+
+              <tr id="row-15-30">
+                <td class="py-3 px-2 text-center text-slate-400 font-mono border-r border-slate-800 bg-slate-950/40">15:30</td>
+                <td class="p-1.5 border-r border-slate-800/60" id="slot-rodrigo-15-30"></td>
+                <td class="p-1.5 border-r border-slate-800/60 professional-col" id="slot-ana-15-30"></td>
+                <td class="p-1.5 professional-col" id="slot-joao-15-30"></td>
+              </tr>
+
+              <tr id="row-16-30">
+                <td class="py-3 px-2 text-center text-slate-400 font-mono border-r border-slate-800 bg-slate-950/40">16:30</td>
+                <td class="p-1.5 border-r border-slate-800/60" id="slot-rodrigo-16-30"></td>
+                <td class="p-1.5 border-r border-slate-800/60 professional-col" id="slot-ana-16-30"></td>
+                <td class="p-1.5 professional-col" id="slot-joao-16-30"></td>
+              </tr>
+
+              <tr id="row-17-30">
+                <td class="py-3 px-2 text-center text-slate-400 font-mono border-r border-slate-800 bg-slate-950/40">17:30</td>
+                <td class="p-1.5 border-r border-slate-800/60" id="slot-rodrigo-17-30"></td>
+                <td class="p-1.5 border-r border-slate-800/60 professional-col" id="slot-ana-17-30"></td>
+                <td class="p-1.5 professional-col" id="slot-joao-17-30"></td>
+              </tr>
+
+              <tr id="row-18-30">
+                <td class="py-3 px-2 text-center text-slate-400 font-mono border-r border-slate-800 bg-slate-950/40">18:30</td>
+                <td class="p-1.5 border-r border-slate-800/60" id="slot-rodrigo-18-30"></td>
+                <td class="p-1.5 border-r border-slate-800/60 professional-col" id="slot-ana-18-30"></td>
+                <td class="p-1.5 professional-col" id="slot-joao-18-30"></td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 4 - NOVO AGENDAMENTO & CLIENTE         -->
+    <!-- ========================================== -->
+    <section id="aba4" class="tab-content block">
+      <div class="max-w-4xl mx-auto space-y-6">
+        
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-calendar-plus text-pink-500"></i> Agendar Atendimento
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Selecione o horário disponível e informe os dados do cliente.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span id="total-clientes" class="text-xs font-semibold bg-slate-950 border border-slate-800 text-slate-300 px-4 py-2 rounded-xl">
+              Clientes: <span class="text-pink-400 font-bold">360</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+          <form id="form-cadastro-cliente" onsubmit="cadastrarClienteEAgendar(event)" class="space-y-6">
+            
+            <!-- ETAPA 1: HORÁRIO & PROFISSIONAL (CHIPS VISUAIS) -->
+            <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800/80 space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <h3 class="text-xs font-bold text-pink-400 uppercase tracking-wider flex items-center gap-2">
+                  <i class="fa-solid fa-clock text-xs"></i> 1. Seleção de Horário & Profissional
+                </h3>
+                <span class="text-xs text-slate-400">Campos obrigatórios *</span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="agendamento-profissional" class="block text-xs font-medium text-slate-300 mb-1.5">Profissional Responsável *</label>
+                  <select id="agendamento-profissional" required onchange="atualizarChipsHorarios()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-pink-500 transition-all">
+                    <option value="rodrigo">Rodrigo Nunes</option>
+                    <option value="ana">Ana Oliveira</option>
+                    <option value="joao">João Souza</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="agendamento-data" class="block text-xs font-medium text-slate-300 mb-1.5">Data da Consulta *</label>
+                  <input id="agendamento-data" type="date" value="2026-08-15" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-pink-500 transition-all">
+                </div>
+              </div>
+
+              <!-- CHIPS INTERATIVOS DE HORÁRIO -->
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-2">Horários Disponíveis Hoje *</label>
+                <div id="chips-container" class="flex flex-wrap gap-2">
+                  <!-- Gerado via JavaScript -->
+                </div>
+                <input type="hidden" id="agendamento-horario-selected" required value="09:30">
+              </div>
+            </div>
+
+            <!-- ETAPA 2: DADOS DO CLIENTE -->
+            <div class="space-y-4 pt-2">
+              <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800/80 pb-3">
+                <i class="fa-solid fa-user text-xs"></i> 2. Dados do Cliente
+              </h3>
+
+              <div class="flex flex-col sm:flex-row items-center gap-4 p-4 bg-slate-950/50 border border-slate-800/60 rounded-xl mb-4">
+                <div class="relative group">
+                  <div id="preview-avatar" class="w-16 h-16 rounded-2xl bg-slate-900 border-2 border-dashed border-slate-700 flex flex-col items-center justify-center text-slate-500 overflow-hidden shadow-inner">
+                    <i class="fa-solid fa-user text-xl text-slate-600"></i>
+                  </div>
+                  <label for="input-foto" class="absolute -bottom-1 -right-1 bg-pink-500 hover:bg-pink-600 text-white p-1.5 rounded-lg text-xs cursor-pointer shadow-lg transition-all">
+                    <i class="fa-solid fa-camera"></i>
+                    <input type="file" id="input-foto" accept="image/*" class="hidden" onchange="previewFotoCliente(event)">
+                  </label>
+                </div>
+                <div class="text-center sm:text-left">
+                  <h4 class="text-xs font-semibold text-slate-200">Foto de Perfil (Opcional)</h4>
+                  <p class="text-xs text-slate-400">Adicione uma foto para facilitar a identificação visual na agenda.</p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                  <label for="cliente-nome" class="block text-xs font-medium text-slate-300 mb-1">Nome Completo *</label>
+                  <input id="cliente-nome" type="text" required placeholder="Ex: Ana Maria Silva" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
+                </div>
+
+                <div>
+                  <label for="cliente-celular" class="block text-xs font-medium text-slate-300 mb-1">WhatsApp / Celular *</label>
+                  <div class="relative">
+                    <i class="fa-solid fa-mobile-screen absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+                    <input id="cliente-celular" type="tel" required placeholder="(61) 99999-0000" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
+                  </div>
+                </div>
+
+                <div>
+                  <label for="cliente-email" class="block text-xs font-medium text-slate-300 mb-1">E-mail</label>
+                  <div class="relative">
+                    <i class="fa-regular fa-envelope absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+                    <input id="cliente-email" type="email" placeholder="cliente@email.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
+                  </div>
+                </div>
+              </div>
+
+              <!-- SEÇÃO EXPANSÍVEL: DOCUMENTOS FISCAIS -->
+              <details class="group bg-slate-950/40 border border-slate-800/60 rounded-xl p-3 transition-all">
+                <summary class="text-xs font-semibold text-slate-400 hover:text-slate-200 cursor-pointer flex items-center justify-between list-none">
+                  <span><i class="fa-solid fa-id-card mr-1.5 text-pink-500"></i> Informações Adicionais (CPF, RG, Aniversário)</span>
+                  <i class="fa-solid fa-chevron-down text-xs group-open:rotate-180 transition-transform"></i>
+                </summary>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 pt-3 border-t border-slate-800/60">
+                  <div>
+                    <label for="cliente-cpf" class="block text-xs font-medium text-slate-400 mb-1">CPF</label>
+                    <input id="cliente-cpf" type="text" placeholder="000.000.000-00" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pink-500">
+                  </div>
+                  <div>
+                    <label for="cliente-rg" class="block text-xs font-medium text-slate-400 mb-1">RG</label>
+                    <input id="cliente-rg" type="text" placeholder="Número do RG" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pink-500">
+                  </div>
+                  <div>
+                    <label for="cliente-nascimento" class="block text-xs font-medium text-slate-400 mb-1">Data de Nascimento</label>
+                    <input id="cliente-nascimento" type="date" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pink-500">
+                  </div>
+                </div>
+              </details>
+
+            </div>
+
+            <!-- BOTÕES DE AÇÃO -->
+            <div class="pt-4 border-t border-slate-800 flex items-center justify-between gap-4">
+              <button type="button" onclick="limparFormulario()" class="bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-400 text-xs font-medium px-5 py-2.5 rounded-xl transition-all">
+                Limpar
+              </button>
+
+              <button type="submit" id="btn-salvar-cliente" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold text-xs px-6 py-3 rounded-xl shadow-lg shadow-pink-500/20 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-calendar-check text-xs"></i> Confirmar Agendamento na Agenda
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- LÓGICA JAVASCRIPT REORGANIZADA -->
+  <script>
+    let currentLoginType = 'estabelecimento';
+    let fotoBase64 = null;
+
+    // Lista de Horários do Salão com Estados Mockados
+    const listaHorarios = [
+      { hora: '08:00', ocupado: false },
+      { hora: '08:30', ocupado: true },
+      { hora: '09:00', ocupado: false },
+      { hora: '09:30', ocupado: false },
+      { hora: '10:00', ocupado: true },
+      { hora: '10:30', ocupado: false },
+      { hora: '13:00', ocupado: false },
+      { hora: '14:00', ocupado: true },
+      { hora: '15:30', ocupado: false },
+      { hora: '16:30', ocupado: false },
+      { hora: '17:30', ocupado: false },
+      { hora: '18:30', ocupado: false }
+    ];
+
+    // Inicialização ao Carregar a Página
+    document.addEventListener('DOMContentLoaded', () => {
+      atualizarChipsHorarios();
+    });
+
+    // Renderiza os Chips de Horário Dinamicamente (Disponível vs Ocupado)
+    function atualizarChipsHorarios() {
+      const container = document.getElementById('chips-container');
+      const hiddenInput = document.getElementById('agendamento-horario-selected');
+      container.innerHTML = '';
+
+      listaHorarios.forEach(item => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        
+        if (item.ocupado) {
+          btn.className = 'px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-900 border border-slate-800/50 text-slate-600 cursor-not-allowed line-through opacity-50';
+          btn.disabled = true;
+          btn.textContent = `${item.hora} (Ocupado)`;
+        } else {
+          const isSelected = hiddenInput.value === item.hora;
+          btn.className = isSelected 
+            ? 'px-3.5 py-2 rounded-xl text-xs font-semibold bg-pink-500 text-white shadow-md shadow-pink-500/20 border border-pink-400 transition-all'
+            : 'px-3.5 py-2 rounded-xl text-xs font-medium bg-slate-900 border border-slate-800 text-slate-300 hover:border-pink-500/50 transition-all';
+          
+          btn.onclick = () => {
+            hiddenInput.value = item.hora;
+            atualizarChipsHorarios();
+          };
+          btn.textContent = item.hora;
+        }
+
+        container.appendChild(btn);
+      });
+    }
+
+    // Alternar Abas com Ajuste de Estilo
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-pink-500', 'text-white', 'shadow');
+        btn.classList.add('text-slate-400');
+      });
+
+      const activeTab = document.getElementById(tabId);
+      const activeBtn = document.getElementById('btn-' + tabId);
+
+      if (activeTab) activeTab.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.add('bg-pink-500', 'text-white', 'shadow');
+        activeBtn.classList.remove('text-slate-400');
+      }
+    }
+
+    // Alternar Tipo de Login
+    function setLoginType(tipo) {
+      currentLoginType = tipo;
+      const btnAdmin = document.getElementById('login-type-admin');
+      const btnProf = document.getElementById('login-type-prof');
+
+      if (tipo === 'estabelecimento') {
+        btnAdmin.className = 'py-2 text-xs font-semibold rounded-lg bg-pink-500 text-white transition-all flex items-center justify-center gap-1.5';
+        btnProf.className = 'py-2 text-xs font-medium text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5';
+      } else {
+        btnProf.className = 'py-2 text-xs font-semibold rounded-lg bg-purple-500 text-white transition-all flex items-center justify-center gap-1.5';
+        btnAdmin.className = 'py-2 text-xs font-medium text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5';
+      }
+    }
+
+    // Alternar Visibilidade da Senha
+    function togglePasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    // Processar Autenticação Mock
+    function processarLogin(event) {
+      event.preventDefault();
+      const btn = document.getElementById('btn-submit-login');
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> Autenticando...`;
+      
+      setTimeout(() => {
+        btn.innerHTML = `<span>Entrar na Conta</span> <i class="fa-solid fa-arrow-right text-xs"></i>`;
+        switchTab('aba2');
+      }, 500);
+    }
+
+    // Configurar Perfil Selecionado na Interface
+    function confirmarEAlternarPerfil(tipo) {
+      const roleIndicator = document.getElementById('role-indicator');
+      const profCols = document.querySelectorAll('.professional-col');
+
+      if (tipo === 'estabelecimento') {
+        if (roleIndicator) {
+          roleIndicator.innerHTML = '<i class="fa-solid fa-shield-halved text-xs"></i> Modo Estabelecimento';
+          roleIndicator.className = 'text-xs px-3 py-1.5 rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20 font-medium flex items-center gap-1.5';
+        }
+        profCols.forEach(col => col.classList.remove('hidden'));
+      } else {
+        if (roleIndicator) {
+          roleIndicator.innerHTML = '<i class="fa-solid fa-user-scissors text-xs"></i> Modo Profissional';
+          roleIndicator.className = 'text-xs px-3 py-1.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 font-medium flex items-center gap-1.5';
+        }
+        profCols.forEach(col => col.classList.add('hidden'));
+      }
+
+      switchTab('aba3');
+    }
+
+    // Preview de Imagem
+    function previewFotoCliente(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          fotoBase64 = e.target.result;
+          document.getElementById('preview-avatar').innerHTML = `<img src="${fotoBase64}" class="w-full h-full object-cover" alt="Foto">`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Cadastrar Cliente e Inserir no Slot da Agenda
+    function cadastrarClienteEAgendar(event) {
+      event.preventDefault();
+
+      const nome = document.getElementById('cliente-nome').value;
+      const celular = document.getElementById('cliente-celular').value;
+      const profissional = document.getElementById('agendamento-profissional').value;
+      const horario = document.getElementById('agendamento-horario-selected').value;
+
+      if (!nome || !celular || !horario) return;
+
+      const btn = document.getElementById('btn-salvar-cliente');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> Agendando...`;
+      btn.disabled = true;
+
+      setTimeout(() => {
+        const targetSlotId = `slot-${profissional}-${horario.replace(':', '-')}`;
+        const targetSlot = document.getElementById(targetSlotId);
+
+        if (targetSlot) {
+          targetSlot.innerHTML = `
+            <div class="bg-slate-800/90 border-l-4 border-emerald-500 p-2.5 rounded-r-xl shadow-md">
+              <div class="flex justify-between items-start">
+                <span class="font-bold text-slate-100">${nome}</span>
+                <span class="text-xs font-semibold text-emerald-400">Agendado</span>
+              </div>
+              <p class="text-slate-300 text-xs mt-1 flex items-center gap-1">
+                <i class="fa-solid fa-check text-emerald-400 text-xs"></i> Novo Atendimento
+              </p>
+            </div>
+          `;
+        }
+
+        // Marca o horário como ocupado no estado
+        const itemHorario = listaHorarios.find(h => h.hora === horario);
+        if (itemHorario) itemHorario.ocupado = true;
+
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+
+        const totalSpan = document.querySelector('#total-clientes span');
+        if (totalSpan) {
+          totalSpan.textContent = parseInt(totalSpan.textContent) + 1;
+        }
+
+        limparFormulario();
+
+        // Direciona para a agenda e realiza o scroll
+        switchTab('aba3');
+
+        const targetRow = document.getElementById(`row-${horario.replace(':', '-')}`);
+        if (targetRow) {
+          targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 600);
+    }
+
+    // Limpar Formulário
+    function limparFormulario() {
+      document.getElementById('form-cadastro-cliente').reset();
+      document.getElementById('agendamento-horario-selected').value = '09:30';
+      document.getElementById('preview-avatar').innerHTML = `<i class="fa-solid fa-user text-xl text-slate-600"></i>`;
+      atualizarChipsHorarios();
+    }
+  </script>
+</body>
+</html>
