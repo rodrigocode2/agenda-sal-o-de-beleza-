@@ -6,10 +6,8 @@
   <meta name="description" content="HairConcept - Sistema Premium de Gestão e Agendamento para Salões de Beleza, Barbearias e Clínicas de Estética.">
   <title>HairConcept - Gestão Premium de Salão de Beleza</title>
 
-  <!-- Tailwind CSS via CDN -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Configuração do Tailwind (Cores customizadas e suporte a Dark Mode) -->
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -44,71 +42,46 @@
     }
   </script>
 
-  <!-- FontAwesome Icons CDN -->
+  <!-- FontAwesome Icons & Google Fonts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <!-- Google Fonts (Inter) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  <!-- Estilos Customizados da Aplicação -->
   <style>
     body {
       font-family: 'Inter', sans-serif;
       background-color: #03050a;
       color: #f8fafc;
     }
-
-    /* Efeito Glassmorphism em Cartões */
     .glass-panel {
       background: rgba(15, 23, 42, 0.75);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
-
-    .glass-panel-hover {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .glass-panel-hover:hover {
-      background: rgba(30, 41, 59, 0.85);
-      border-color: rgba(236, 72, 153, 0.3);
-      transform: translateY(-2px);
-    }
-
-    /* Customização da Barra de Rolagem Horizontal e Vertical */
     .custom-scrollbar::-webkit-scrollbar {
       width: 8px;
       height: 8px;
     }
-
     .custom-scrollbar::-webkit-scrollbar-track {
       background: #070b15;
     }
-
     .custom-scrollbar::-webkit-scrollbar-thumb {
       background: #1e293b;
       border-radius: 9999px;
     }
-
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
       background: #ec4899;
     }
-
-    /* Animações e Transições de Interface */
     .tab-content {
       transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
     }
-
     .tab-content.hidden {
       display: none !important;
       opacity: 0;
       transform: scale(0.98);
     }
-
-    /* Estilização Fixa para a Coluna de Horários da Tabela */
     .sticky-time-col {
       position: sticky;
       left: 0;
@@ -120,12 +93,15 @@
 </head>
 <body class="bg-darkbg-300 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white custom-scrollbar">
 
-  <!-- CABEÇALHO PRINCIPAL E NAVEGAÇÃO -->
-  <header class="sticky top-0 z-50 glass-panel border-b border-slate-800/80">
+  <!-- NOTIFICAÇÕES TOAST -->
+  <div id="toast-container" class="fixed top-24 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+  <!-- CABEÇALHO PRINCIPAL -->
+  <header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
       
-      <!-- Logo da Marca -->
-      <div class="flex items-center gap-3">
+      <!-- Logo -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="UI.switchTab('aba0')">
         <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-600 to-rose-400 flex items-center justify-center shadow-lg shadow-brand-500/20">
           <i class="fa-solid fa-scissors text-white text-xl"></i>
         </div>
@@ -137,33 +113,36 @@
         </div>
       </div>
 
-      <!-- Links de Navegação Principal -->
+      <!-- Navegação Principal -->
       <nav class="hidden lg:flex items-center gap-1 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800">
-        <button id="btn-aba0" onclick="switchTab('aba0')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
+        <button id="btn-aba0" onclick="UI.switchTab('aba0')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
           <i class="fa-solid fa-house text-brand-400"></i> Início & Planos
         </button>
-        <button id="btn-aba1" onclick="switchTab('aba1')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
-          <i class="fa-solid fa-right-to-bracket text-brand-400"></i> Acesso
+        <button id="btn-aba3" onclick="UI.switchTab('aba3')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
+          <i class="fa-solid fa-calendar-days text-brand-400"></i> Agenda Geral
         </button>
-        <button id="btn-aba2" onclick="switchTab('aba2')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-brand-400"></i> Seleção de Modo
-        </button>
-        <button id="btn-aba3" onclick="switchTab('aba3')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
-          <i class="fa-solid fa-calendar-days text-brand-400"></i> Agenda Geral (15 Profissionais)
-        </button>
-        <button id="btn-aba4" onclick="switchTab('aba4')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
+        <button id="btn-aba4" onclick="UI.switchTab('aba4')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
           <i class="fa-solid fa-plus text-brand-400"></i> Novo Agendamento
+        </button>
+        <button id="btn-aba5" onclick="UI.switchTab('aba5')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
+          <i class="fa-solid fa-users-gear text-brand-400"></i> Profissionais
         </button>
       </nav>
 
-      <!-- Botões de Ação do Usuário -->
+      <!-- Ações do Usuário e Status -->
       <div class="flex items-center gap-3">
-        <div id="user-display" class="hidden sm:flex text-xs px-3 py-1.5 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 font-medium items-center gap-1.5">
-          <i class="fa-solid fa-envelope text-xs"></i> <span id="lbl-email-usuario">nao_logado</span>
+        <div id="role-indicator" class="hidden sm:flex text-xs px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 font-medium items-center gap-1.5">
+          <i class="fa-solid fa-user-shield text-xs text-brand-400"></i> <span id="user-role-label">Visitante</span>
         </div>
-        <button onclick="switchTab('aba1')" class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition-all shadow-lg shadow-brand-500/25 active:scale-95 flex items-center gap-2">
-          <i class="fa-solid fa-user"></i> Entrar
-        </button>
+        
+        <div id="auth-actions">
+          <button id="btn-login-header" onclick="UI.switchTab('aba1')" class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition-all shadow-lg shadow-brand-500/25 active:scale-95 flex items-center gap-2">
+            <i class="fa-solid fa-user"></i> Entrar
+          </button>
+          <button id="btn-logout-header" onclick="Auth.logout()" class="hidden px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-rose-400 border border-slate-800 font-semibold text-xs transition-all flex items-center gap-2">
+            <i class="fa-solid fa-right-from-bracket"></i> Sair
+          </button>
+        </div>
       </div>
 
     </div>
@@ -172,10 +151,8 @@
   <!-- ÁREA DE CONTEÚDO PRINCIPAL -->
   <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    <!-- ABA 0: LANDING PAGE & SEÇÃO DE PLANOS -->
+    <!-- ABA 0: LANDING PAGE -->
     <section id="aba0" class="tab-content space-y-16">
-      
-      <!-- Banner Hero -->
       <div class="text-center max-w-4xl mx-auto pt-8 pb-4 space-y-6">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-medium">
           <span class="flex h-2 w-2 rounded-full bg-brand-500 animate-pulse"></span>
@@ -185,11 +162,11 @@
           Sua Agenda de Salão <span class="bg-gradient-to-r from-brand-500 via-rose-400 to-purple-500 bg-clip-text text-transparent">Totalmente Organizada</span>
         </h1>
         <p class="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-          Gerenciamento completo de agendamentos, clientes e equipe de até 15 profissionais simultâneos com alto desempenho.
+          Gerenciamento completo de agendamentos, clientes e equipe com controle de acesso rigoroso e alta performance.
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-          <button onclick="switchTab('aba1')" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm transition-all shadow-xl shadow-brand-500/30 flex items-center justify-center gap-2">
-            <i class="fa-solid fa-rocket"></i> Começar Teste Gratuito
+          <button onclick="UI.switchTab('aba1')" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm transition-all shadow-xl shadow-brand-500/30 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rocket"></i> Acessar o Painel
           </button>
           <a href="#secao-planos" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold text-sm border border-slate-800 transition-all flex items-center justify-center gap-2">
             <i class="fa-solid fa-tags"></i> Ver Planos e Preços
@@ -197,16 +174,13 @@
         </div>
       </div>
 
-      <!-- Tabela de Planos -->
       <div id="secao-planos" class="space-y-8 pt-6">
         <div class="text-center space-y-3">
           <h2 class="text-3xl font-black text-white">Planos Simples e Transparentes</h2>
-          <p class="text-slate-400 text-xs sm:text-sm max-w-md mx-auto">Escolha o plano ideal para a escala da sua equipe e do seu negócio.</p>
+          <p class="text-slate-400 text-xs sm:text-sm max-w-md mx-auto">Escolha o plano ideal para a escala do seu negócio.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-          
-          <!-- Plano Gratuito -->
           <div class="glass-panel rounded-3xl p-8 flex flex-col justify-between border border-slate-800">
             <div class="space-y-6">
               <div>
@@ -223,10 +197,9 @@
                 <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-brand-500"></i> Visualização de agenda diária</li>
               </ul>
             </div>
-            <button onclick="switchTab('aba1')" class="mt-8 w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 font-semibold text-xs hover:bg-slate-800 transition-all">Ativar Plano Gratuito</button>
+            <button onclick="UI.switchTab('aba1')" class="mt-8 w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 font-semibold text-xs hover:bg-slate-800 transition-all">Ativar Plano Gratuito</button>
           </div>
 
-          <!-- Plano Pro -->
           <div class="glass-panel rounded-3xl p-8 flex flex-col justify-between border-2 border-brand-500 relative shadow-2xl shadow-brand-500/10">
             <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-brand-500 text-white font-bold text-[10px] uppercase tracking-widest px-4 py-1 rounded-full">
               RECOMENDADO
@@ -242,15 +215,14 @@
               </div>
               <ul class="space-y-3 text-xs text-slate-200">
                 <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-brand-400"></i> Agendamentos ilimitados</li>
-                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-brand-400"></i> Grade com até 15 Profissionais</li>
+                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-brand-400"></i> Grade de Profissionais Dinâmica</li>
                 <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-brand-400"></i> Notificações automáticas</li>
-                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-brand-400"></i> Controle simplificado de comissões</li>
+                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-brand-400"></i> Múltiplos Perfis de Acesso</li>
               </ul>
             </div>
-            <button onclick="switchTab('aba1')" class="mt-8 w-full py-3.5 px-4 rounded-xl bg-brand-500 text-white font-bold text-xs shadow-lg shadow-brand-500/30 hover:bg-brand-600 transition-all">Iniciar Teste de 7 Dias</button>
+            <button onclick="UI.switchTab('aba1')" class="mt-8 w-full py-3.5 px-4 rounded-xl bg-brand-500 text-white font-bold text-xs shadow-lg shadow-brand-500/30 hover:bg-brand-600 transition-all">Iniciar Teste de 7 Dias</button>
           </div>
 
-          <!-- Plano Enterprise -->
           <div class="glass-panel rounded-3xl p-8 flex flex-col justify-between border border-slate-800">
             <div class="space-y-6">
               <div>
@@ -263,13 +235,12 @@
               </div>
               <ul class="space-y-3 text-xs text-slate-300">
                 <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-purple-400"></i> TUDO do Plano Pro</li>
-                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-purple-400"></i> Múltiplas unidades/filiais</li>
+                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-purple-400"></i> Múltiplicas unidades/filiais</li>
                 <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-purple-400"></i> Profissionais ilimitados</li>
               </ul>
             </div>
-            <button onclick="switchTab('aba1')" class="mt-8 w-full py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs transition-all">Solicitar Demonstração</button>
+            <button onclick="UI.switchTab('aba1')" class="mt-8 w-full py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs transition-all">Solicitar Demonstração</button>
           </div>
-
         </div>
       </div>
     </section>
@@ -282,86 +253,61 @@
             <i class="fa-solid fa-lock"></i>
           </div>
           <h2 class="text-2xl font-black text-white">Acesse o Sistema</h2>
-          <p class="text-xs text-slate-400">Seu e-mail será utilizado para recuperar e salvar seus agendamentos</p>
+          <p class="text-xs text-slate-400">Selecione o tipo de perfil e faça login</p>
         </div>
-        <form onsubmit="processarLogin(event)" class="space-y-4">
+        
+        <form id="form-login" onsubmit="App.handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Perfil de Acesso</label>
+            <select id="login-role" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+              <option value="ADMIN">Administrador (Acesso Total)</option>
+              <option value="PROFISSIONAL">Profissional (Visualização)</option>
+            </select>
+          </div>
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1.5">E-mail Cadastrado</label>
-            <input id="login-email" type="email" placeholder="seu@email.com" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+            <input type="email" id="login-email" value="admin@hairconcept.com" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1.5">Senha de Acesso</label>
-            <input type="password" placeholder="••••••••" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+            <input type="password" id="login-password" value="123456" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
           </div>
           <button type="submit" class="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-lg shadow-brand-500/25 transition-all">Entrar no Painel</button>
         </form>
       </div>
     </section>
 
-    <!-- ABA 2: SELEÇÃO DE MODO DE VISUALIZAÇÃO -->
-    <section id="aba2" class="tab-content hidden max-w-2xl mx-auto space-y-6">
-      <div class="text-center space-y-2">
-        <h2 class="text-2xl font-black text-white">Escolha o Modo de Exibição</h2>
-        <p class="text-xs text-slate-400">Selecione como deseja visualizar a grade de atendimentos</p>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div onclick="confirmarEAlternarPerfil('estabelecimento')" class="glass-panel glass-panel-hover rounded-3xl p-6 border border-slate-800 cursor-pointer space-y-4">
-          <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-400 flex items-center justify-center text-xl"><i class="fa-solid fa-building"></i></div>
-          <h3 class="text-base font-bold text-white">Visão do Estabelecimento</h3>
-          <p class="text-xs text-slate-400">Acompanhamento completo de todas as colunas da equipe em tempo real.</p>
-        </div>
-        <div onclick="confirmarEAlternarPerfil('profissional')" class="glass-panel glass-panel-hover rounded-3xl p-6 border border-slate-800 cursor-pointer space-y-4">
-          <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl"><i class="fa-solid fa-user-scissors"></i></div>
-          <h3 class="text-base font-bold text-white">Visão Individual do Profissional</h3>
-          <p class="text-xs text-slate-400">Foco restrito aos seus próprios agendamentos e horários marcados do dia.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ABA 3: AGENDA GERAL COM SELETOR DE ESTABELECIMENTO -->
+    <!-- ABA 3: AGENDA GERAL -->
     <section id="aba3" class="tab-content hidden space-y-6">
-      
-      <!-- Painel de Vinculação & Seleção de Salão -->
       <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
-        
-        <!-- Seletor Ativo / Status -->
         <div class="flex items-center gap-3 w-full md:w-auto">
           <div class="w-10 h-10 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center text-lg">
             <i class="fa-solid fa-store"></i>
           </div>
           <div>
-            <label class="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Estabelecimento Selecionado</label>
-            <select id="select-estabelecimento-ativo" onchange="alterarEstabelecimentoAtivo(this.value)" class="bg-slate-900 border border-slate-800 text-xs font-bold text-white rounded-xl px-3 py-1.5 focus:outline-none focus:border-brand-500">
-              <!-- Opções injetadas dinamicamente via JS -->
-            </select>
+            <span class="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Estabelecimento</span>
+            <span id="nome-estabelecimento" class="text-xs font-bold text-white">HairConcept - Unidade Central</span>
           </div>
         </div>
 
-        <!-- Código do Salão & Entrada do Profissional -->
-        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
-          <div class="bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800 text-xs text-slate-300">
-            Código do Salão: <span id="codigo-salao-exibicao" class="font-mono font-bold text-brand-400">SALAO-8921</span>
+        <div class="flex flex-wrap items-center gap-4 w-full md:w-auto justify-end">
+          <div class="bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800 text-xs text-slate-300 flex items-center gap-3">
+            <span><i class="fa-solid fa-users text-brand-400 mr-1"></i> Profissionais: <strong id="cnt-profissionais" class="text-white">0</strong></span>
+            <span class="border-l border-slate-800 pl-3"><i class="fa-solid fa-calendar-check text-brand-400 mr-1"></i> Agendamentos: <strong id="cnt-agendamentos" class="text-white">0</strong></span>
           </div>
 
-          <button onclick="solicitarCodigoVincular()" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-brand-400 font-semibold text-xs transition-all flex items-center gap-1.5">
-            <i class="fa-solid fa-link"></i> Entrar em outro Salão
-          </button>
-
-          <button onclick="switchTab('aba4')" class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-md shadow-brand-500/20 transition-all flex items-center gap-2">
+          <button id="btn-novo-agendamento-top" onclick="UI.switchTab('aba4')" class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-md shadow-brand-500/20 transition-all flex items-center gap-2">
             <i class="fa-solid fa-plus text-xs"></i> Novo Agendamento
           </button>
         </div>
-
       </div>
 
-      <!-- Tabela Dinâmica da Agenda -->
       <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
         <div class="overflow-x-auto custom-scrollbar">
-          <table class="w-full text-left border-collapse min-w-[2400px]">
+          <table class="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr id="grid-header-row" class="bg-slate-900/80 border-b border-slate-800 text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
                 <th class="py-3 px-4 w-24 sticky-time-col">Horário</th>
-                <!-- Colunas dos profissionais montadas dinamicamente via JS -->
               </tr>
             </thead>
             <tbody id="grid-horarios-body" class="divide-y divide-slate-800/60 text-xs"></tbody>
@@ -373,366 +319,591 @@
     <!-- ABA 4: NOVO AGENDAMENTO -->
     <section id="aba4" class="tab-content hidden max-w-2xl mx-auto space-y-6">
       <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-2xl space-y-6">
-        <h2 class="text-xl font-bold text-white flex items-center gap-2"><i class="fa-solid fa-calendar-plus text-brand-500"></i> Registrar Novo Agendamento</h2>
-        <form id="form-cadastro-cliente" onsubmit="cadastrarClienteEAgendar(event)" class="space-y-4">
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-calendar-plus text-brand-500"></i> Registrar Novo Agendamento
+        </h2>
+        <form id="form-cadastro-agendamento" onsubmit="App.handleCreateAgendamento(event)" class="space-y-4">
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1.5">Profissional Responsável *</label>
             <select id="agendamento-profissional" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
-              <!-- Opções dos profissionais dinâmicas segundo o salão escolhido -->
             </select>
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1.5">Horário *</label>
             <select id="agendamento-horario" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
-              <option value="08-00">08:00</option>
-              <option value="09-00">09:00</option>
-              <option value="10-00">10:00</option>
-              <option value="11-00">11:00</option>
-              <option value="13-00">13:00</option>
-              <option value="14-00">14:00</option>
-              <option value="15-00">15:00</option>
-              <option value="16-00">16:00</option>
-              <option value="17-00">17:00</option>
-              <option value="18-00">18:00</option>
+              <option value="08:00">08:00</option>
+              <option value="09:00">09:00</option>
+              <option value="10:00">10:00</option>
+              <option value="11:00">11:00</option>
+              <option value="13:00">13:00</option>
+              <option value="14:00">14:00</option>
+              <option value="15:00">15:00</option>
+              <option value="16:00">16:00</option>
+              <option value="17:00">17:00</option>
+              <option value="18:00">18:00</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Nome Completo do Cliente *</label>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Nome do Cliente *</label>
             <input id="cliente-nome" type="text" placeholder="Ex: Maria Oliveira" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">E-mail do Cliente / Responsável *</label>
-            <input id="cliente-email" type="email" placeholder="cliente@email.com" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
-          </div>
-          <div>
             <label class="block text-xs font-medium text-slate-300 mb-1.5">Descrição do Serviço *</label>
-            <input id="cliente-servico" type="text" placeholder="Ex: Corte, Escova e Hidratação" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+            <input id="cliente-servico" type="text" placeholder="Ex: Corte e Escova" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
           </div>
-          <button type="submit" class="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-lg shadow-brand-500/25 transition-all">Confirmar e Salvar no LocalStorage</button>
+          <button type="submit" class="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-lg shadow-brand-500/25 transition-all">
+            Confirmar e Salvar na Agenda
+          </button>
         </form>
+      </div>
+    </section>
+
+    <!-- ABA 5: GESTÃO DE PROFISSIONAIS (EXCLUSIVA ADMIN) -->
+    <section id="aba5" class="tab-content hidden max-w-4xl mx-auto space-y-6">
+      <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-2xl space-y-6">
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-users-gear text-brand-500"></i> Gerenciamento de Profissionais
+        </h2>
+        
+        <form id="form-cadastro-profissional" onsubmit="App.handleCreateProfissional(event)" class="flex flex-col sm:flex-row gap-3">
+          <input id="profissional-nome" type="text" placeholder="Nome do Profissional (Ex: Carlos Silva)" required class="flex-grow bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+          <input id="profissional-especialidade" type="text" placeholder="Especialidade (Ex: Colorista)" required class="flex-grow bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-lg shadow-brand-500/25 transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus"></i> Cadastrar
+          </button>
+        </form>
+
+        <div class="border-t border-slate-800 pt-6">
+          <h3 class="text-sm font-semibold text-slate-300 mb-4">Equipe Cadastrada</h3>
+          <div id="lista-profissionais-gestao" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          </div>
+        </div>
       </div>
     </section>
 
   </main>
 
-  <!-- LÓGICA JAVASCRIPT COM LOCALSTORAGE PERSISTENTE -->
+  <!-- ARQUITETURA JAVASCRIPT EM MÓDULOS -->
   <script>
-    // Banco de Dados Inicial Padrão de Estabelecimentos
-    const dadosIniciaisEstabelecimentos = {
-      "SALAO-8921": {
-        id: "SALAO-8921",
-        nome: "HairConcept - Unidade Central",
-        profissionais: [
-          { id: 'rodrigocode2', nome: '1. Rodrigo (Cabelo)' },
-          { id: 'ana', nome: '2. Ana (Escova/Cor)' },
-          { id: 'joao', nome: '3. João (Manicure)' },
-          { id: 'p4', nome: '4. Mariana (Estética)' },
-          { id: 'p5', nome: '5. Lucas (Barba)' },
-          { id: 'p6', nome: '6. Beatris (Sobrancelha)' },
-          { id: 'p7', nome: '7. Gabriel (Corte)' },
-          { id: 'p8', nome: '8. Camila (Pedicure)' },
-          { id: 'p9', nome: '9. Rafael (Colorista)' },
-          { id: 'p10', nome: '10. Juliana (Make)' },
-          { id: 'p11', nome: '11. Thiago (Barba)' },
-          { id: 'p12', nome: '12. Patricia (Depilação)' },
-          { id: 'p13', nome: '13. Fernando (Massagem)' },
-          { id: 'p14', nome: '14. Vanessa (Cílios)' },
-          { id: 'p15', nome: '15. Diego (Tratamentos)' }
-        ]
+    /* ==========================================================================
+       MÓDULO: STORAGE (Persistência e Interface para Futura Integração Database)
+       ========================================================================== */
+    const Storage = {
+      KEYS: {
+        SESSION: 'hairconcept_session',
+        PROFISSIONAIS: 'hairconcept_profissionais',
+        AGENDAMENTOS: 'hairconcept_agendamentos',
+        ESTABELECIMENTO: 'hairconcept_estabelecimento'
       },
-      "SALAO-4412": {
-        id: "SALAO-4412",
-        nome: "Studio Barber VIP",
-        profissionais: [
-          { id: 'rodrigocode2', nome: '1. Rodrigo (Cabelo)' },
-          { id: 'p5', nome: '2. Lucas (Barba)' },
-          { id: 'p7', nome: '3. Gabriel (Corte)' }
-        ]
-      }
-    };
-
-    // Perfil Padrão do Usuário
-    let usuarioLogado = {
-      id: "rodrigocode2",
-      nome: "Rodrigo",
-      email: "rodrigo@hairconcept.com",
-      estabelecimentosVinculados: ["SALAO-8921", "SALAO-4412"],
-      estabelecimentoAtivoId: "SALAO-8921"
-    };
-
-    let estabelecimentosDB = {};
-    let agendamentosDB = {}; // Estrutura de agendamentos por e-mail e chave única
-
-    // Lista de Horários Disponíveis
-    const listaHorarios = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
-
-    // FUNÇÕES DE GERENCIAMENTO DE LOCALSTORAGE
-    function carregarDadosDoLocalStorage() {
-      // 1. Carregar Estabelecimentos
-      const estSalvos = localStorage.getItem('hc_estabelecimentos');
-      if (estSalvos) {
-        estabelecimentosDB = JSON.parse(estSalvos);
-      } else {
-        estabelecimentosDB = dadosIniciaisEstabelecimentos;
-        salvarEstabelecimentosNoLocalStorage();
-      }
-
-      // 2. Carregar Usuário Ativo Salvo
-      const userSalvo = localStorage.getItem('hc_usuario_ativo');
-      if (userSalvo) {
-        usuarioLogado = JSON.parse(userSalvo);
-      } else {
-        salvarUsuarioNoLocalStorage();
-      }
-
-      // 3. Carregar Agendamentos
-      const agendamentosSalvos = localStorage.getItem('hc_agendamentos');
-      if (agendamentosSalvos) {
-        agendamentosDB = JSON.parse(agendamentosSalvos);
-      } else {
-        agendamentosDB = {};
-        salvarAgendamentosNoLocalStorage();
-      }
-
-      // Atualizar E-mail na Interface
-      const lblEmail = document.getElementById('lbl-email-usuario');
-      if (lblEmail) lblEmail.textContent = usuarioLogado.email;
-    }
-
-    function salvarEstabelecimentosNoLocalStorage() {
-      localStorage.setItem('hc_estabelecimentos', JSON.stringify(estabelecimentosDB));
-    }
-
-    function salvarUsuarioNoLocalStorage() {
-      localStorage.setItem('hc_usuario_ativo', JSON.stringify(usuarioLogado));
-      const lblEmail = document.getElementById('lbl-email-usuario');
-      if (lblEmail) lblEmail.textContent = usuarioLogado.email;
-    }
-
-    function salvarAgendamentosNoLocalStorage() {
-      localStorage.setItem('hc_agendamentos', JSON.stringify(agendamentosDB));
-    }
-
-    // NAVEGAÇÃO DE ABAS
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-brand-500', 'text-white');
-        btn.classList.add('text-slate-300');
-      });
-      
-      const target = document.getElementById(tabId);
-      if (target) target.classList.remove('hidden');
-      
-      const btn = document.getElementById(`btn-${tabId}`);
-      if (btn) {
-        btn.classList.add('bg-brand-500', 'text-white');
-        btn.classList.remove('text-slate-300');
-      }
-    }
-
-    // PROCESSAMENTO DE LOGIN COM USO DO E-MAIL COMO CHAVE
-    function processarLogin(e) {
-      e.preventDefault();
-      const emailDigitado = document.getElementById('login-email').value.trim().toLowerCase();
-
-      if (emailDigitado) {
-        usuarioLogado.email = emailDigitado;
-        
-        // Auto-preenche o e-mail no formulário de agendamento também
-        const campoEmailCliente = document.getElementById('cliente-email');
-        if (campoEmailCliente) campoEmailCliente.value = emailDigitado;
-
-        salvarUsuarioNoLocalStorage();
-        switchTab('aba2');
-      }
-    }
-
-    function confirmarEAlternarPerfil(perfil) {
-      switchTab('aba3');
-    }
-
-    // SELETOR E AÇÕES DO ESTABELECIMENTO
-    function atualizarSeletorEstabelecimentos() {
-      const select = document.getElementById('select-estabelecimento-ativo');
-      if (!select) return;
-
-      select.innerHTML = '';
-      usuarioLogado.estabelecimentosVinculados.forEach(codigo => {
-        const est = estabelecimentosDB[codigo];
-        if (est) {
-          const option = document.createElement('option');
-          option.value = est.id;
-          option.textContent = est.nome;
-          if (est.id === usuarioLogado.estabelecimentoAtivoId) option.selected = true;
-          select.appendChild(option);
+      get(key, defaultValue = null) {
+        try {
+          const data = localStorage.getItem(key);
+          return data ? JSON.parse(data) : defaultValue;
+        } catch (e) {
+          console.error(`Erro ao ler ${key} do Storage:`, e);
+          return defaultValue;
         }
-      });
+      },
+      set(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+          console.error(`Erro ao salvar ${key} no Storage:`, e);
+        }
+      },
+      remove(key) {
+        try {
+          localStorage.removeItem(key);
+        } catch (e) {
+          console.error(`Erro ao remover ${key} do Storage:`, e);
+        }
+      }
+    };
 
-      document.getElementById('codigo-salao-exibicao').textContent = usuarioLogado.estabelecimentoAtivoId;
-    }
+    /* ==========================================================================
+       MÓDULO: AUTH (Autenticação, Sessão e Regras de Segurança)
+       ========================================================================== */
+    const Auth = {
+      currentUser: null,
 
-    function alterarEstabelecimentoAtivo(novoCodigo) {
-      usuarioLogado.estabelecimentoAtivoId = novoCodigo;
-      salvarUsuarioNoLocalStorage();
-      document.getElementById('codigo-salao-exibicao').textContent = novoCodigo;
-      renderizarGridAgenda();
-      atualizarSelectFormularioAgendamento();
-    }
+      init() {
+        this.currentUser = Storage.get(Storage.KEYS.SESSION, null);
+      },
 
-    function solicitarCodigoVincular() {
-      const codigoDigitado = prompt("Digite o Código do Estabelecimento que deseja se vincular (Ex: SALAO-4412):");
-      if (!codigoDigitado) return;
+      login(email, password, role) {
+        if (!email || !password) {
+          throw new Error("Por favor, preencha todos os campos de login.");
+        }
+        
+        const user = {
+          uid: 'usr_' + Date.now(),
+          email: email,
+          role: role,
+          loginAt: new Date().toISOString()
+        };
 
-      const codigoUpper = codigoDigitado.trim().toUpperCase();
+        this.currentUser = user;
+        Storage.set(Storage.KEYS.SESSION, user);
+        return user;
+      },
 
-      if (estabelecimentosDB[codigoUpper]) {
-        if (!usuarioLogado.estabelecimentosVinculados.includes(codigoUpper)) {
-          usuarioLogado.estabelecimentosVinculados.push(codigoUpper);
+      logout() {
+        this.currentUser = null;
+        Storage.remove(Storage.KEYS.SESSION);
+        UI.toast("Sessão encerrada com sucesso.", "info");
+        UI.renderState();
+        UI.switchTab('aba0');
+      },
+
+      isAuthenticated() {
+        return !!this.currentUser;
+      },
+
+      isAdmin() {
+        return this.isAuthenticated() && this.currentUser.role === 'ADMIN';
+      },
+
+      isProfissional() {
+        return this.isAuthenticated() && this.currentUser.role === 'PROFISSIONAL';
+      }
+    };
+
+    /* ==========================================================================
+       MÓDULO: PROFISSIONAIS (Regras de Negócio e Gestão de Profissionais)
+       ========================================================================== */
+    const Profissionais = {
+      getAll() {
+        return Storage.get(Storage.KEYS.PROFISSIONAIS, []);
+      },
+
+      add(nome, especialidade) {
+        if (!Auth.isAdmin()) {
+          throw new Error("Apenas administradores podem cadastrar profissionais.");
+        }
+
+        const nomeTrim = nome ? nome.trim() : "";
+        const especTrim = especialidade ? especialidade.trim() : "";
+
+        if (!nomeTrim || !especTrim) {
+          throw new Error("Nome e especialidade são obrigatórios.");
+        }
+
+        const lista = this.getAll();
+        const duplicado = lista.some(p => p.nome.toLowerCase() === nomeTrim.toLowerCase());
+        
+        if (duplicado) {
+          throw new Error("Já existe um profissional cadastrado com este nome.");
+        }
+
+        const novoProfissional = {
+          id: 'prof_' + Date.now(),
+          nome: nomeTrim,
+          especialidade: especTrim,
+          criadoEm: new Date().toISOString()
+        };
+
+        lista.push(novoProfissional);
+        Storage.set(Storage.KEYS.PROFISSIONAIS, lista);
+        return novoProfissional;
+      },
+
+      remove(id) {
+        if (!Auth.isAdmin()) {
+          throw new Error("Apenas administradores podem remover profissionais.");
+        }
+
+        let lista = this.getAll();
+        lista = lista.filter(p => p.id !== id);
+        Storage.set(Storage.KEYS.PROFISSIONAIS, lista);
+
+        // Limpa agendamentos vinculados ao profissional removido
+        Agenda.removeByProfissional(id);
+      }
+    };
+
+    /* ==========================================================================
+       MÓDULO: AGENDA (Regras de Negócio, Agendamentos e Conflitos de Horário)
+       ========================================================================== */
+    const Agenda = {
+      HORARIOS: ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'],
+
+      getAll() {
+        return Storage.get(Storage.KEYS.AGENDAMENTOS, []);
+      },
+
+      add(profissionalId, horario, cliente, servico) {
+        if (!Auth.isAdmin()) {
+          throw new Error("Apenas administradores podem criar agendamentos.");
+        }
+
+        const clienteTrim = cliente ? cliente.trim() : "";
+        const servicoTrim = servico ? servico.trim() : "";
+
+        if (!profissionalId || !horario || !clienteTrim || !servicoTrim) {
+          throw new Error("Todos os campos do agendamento são obrigatórios.");
+        }
+
+        const lista = this.getAll();
+        const conflito = lista.some(a => a.profissionalId === profissionalId && a.horario === horario);
+
+        if (conflito) {
+          throw new Error("Este profissional já possui um agendamento neste horário.");
+        }
+
+        const novoAgendamento = {
+          id: 'agend_' + Date.now(),
+          profissionalId: profissionalId,
+          cliente: clienteTrim,
+          servico: servicoTrim,
+          horario: horario,
+          criadoEm: new Date().toISOString()
+        };
+
+        lista.push(novoAgendamento);
+        Storage.set(Storage.KEYS.AGENDAMENTOS, lista);
+        return novoAgendamento;
+      },
+
+      remove(id) {
+        if (!Auth.isAdmin()) {
+          throw new Error("Apenas administradores podem excluir agendamentos.");
+        }
+
+        let lista = this.getAll();
+        lista = lista.filter(a => a.id !== id);
+        Storage.set(Storage.KEYS.AGENDAMENTOS, lista);
+      },
+
+      removeByProfissional(profissionalId) {
+        let lista = this.getAll();
+        lista = lista.filter(a => a.profissionalId !== profissionalId);
+        Storage.set(Storage.KEYS.AGENDAMENTOS, lista);
+      }
+    };
+
+    /* ==========================================================================
+       MÓDULO: UI (Interface do Usuário, Renderização Otimizada e Eventos)
+       ========================================================================== */
+    const UI = {
+      PROTECTED_TABS: ['aba3', 'aba4', 'aba5'],
+      ADMIN_ONLY_TABS: ['aba5'],
+
+      toast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        const bgClass = type === 'error' ? 'bg-rose-950 border-rose-500 text-rose-200' :
+                        type === 'info' ? 'bg-slate-900 border-brand-500 text-slate-200' :
+                        'bg-emerald-950 border-emerald-500 text-emerald-200';
+
+        const iconClass = type === 'error' ? 'fa-circle-exclamation text-rose-400' :
+                          type === 'info' ? 'fa-circle-info text-brand-400' :
+                          'fa-circle-check text-emerald-400';
+
+        toast.className = `pointer-events-auto flex items-center gap-3 p-4 rounded-xl border shadow-2xl ${bgClass} transition-all duration-300 transform translate-y-2 opacity-0`;
+        toast.innerHTML = `<i class="fa-solid ${iconClass} text-base"></i><span class="text-xs font-medium">${message}</span>`;
+
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => {
+          toast.classList.remove('translate-y-2', 'opacity-0');
+        });
+
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-2');
+          setTimeout(() => toast.remove(), 300);
+        }, 3500);
+      },
+
+      switchTab(tabId) {
+        if (this.PROTECTED_TABS.includes(tabId) && !Auth.isAuthenticated()) {
+          this.toast("Acesso restrito. Faça login para continuar.", "error");
+          this.switchTab('aba1');
+          return;
+        }
+
+        if (this.ADMIN_ONLY_TABS.includes(tabId) && !Auth.isAdmin()) {
+          this.toast("Acesso negado. Funcionalidade exclusiva para Administradores.", "error");
+          return;
+        }
+
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.classList.remove('bg-brand-500', 'text-white');
+          btn.classList.add('text-slate-300');
+        });
+
+        const target = document.getElementById(tabId);
+        if (target) target.classList.remove('hidden');
+
+        const btn = document.getElementById(`btn-${tabId}`);
+        if (btn) {
+          btn.classList.add('bg-brand-500', 'text-white');
+          btn.classList.remove('text-slate-300');
+        }
+
+        if (tabId === 'aba3') this.renderGridAgenda();
+        if (tabId === 'aba4') this.renderFormAgendamentoOptions();
+        if (tabId === 'aba5') this.renderProfissionaisGestao();
+      },
+
+      renderState() {
+        const isAuth = Auth.isAuthenticated();
+        const roleLabel = document.getElementById('user-role-label');
+        const btnLogin = document.getElementById('btn-login-header');
+        const btnLogout = document.getElementById('btn-logout-header');
+        const btnNovoAgendamentoTop = document.getElementById('btn-novo-agendamento-top');
+        const btnAba5 = document.getElementById('btn-aba5');
+
+        if (roleLabel) {
+          roleLabel.textContent = isAuth ? (Auth.isAdmin() ? 'Administrador' : 'Profissional') : 'Visitante';
+        }
+
+        if (btnLogin) btnLogin.classList.toggle('hidden', isAuth);
+        if (btnLogout) btnLogout.classList.toggle('hidden', !isAuth);
+
+        if (btnNovoAgendamentoTop) {
+          btnNovoAgendamentoTop.classList.toggle('hidden', !Auth.isAdmin());
+        }
+
+        if (btnAba5) {
+          btnAba5.classList.toggle('hidden', !Auth.isAdmin());
+        }
+      },
+
+      updateCounters() {
+        const profs = Profissionais.getAll();
+        const agends = Agenda.getAll();
+
+        const cntProf = document.getElementById('cnt-profissionais');
+        const cntAgend = document.getElementById('cnt-agendamentos');
+
+        if (cntProf) cntProf.textContent = profs.length;
+        if (cntAgend) cntAgend.textContent = agends.length;
+      },
+
+      renderGridAgenda() {
+        this.updateCounters();
+        const headerRow = document.getElementById('grid-header-row');
+        const tbody = document.getElementById('grid-horarios-body');
+        if (!tbody || !headerRow) return;
+
+        const profs = Profissionais.getAll();
+        const agends = Agenda.getAll();
+
+        // Limpa cabeçalho e corpo
+        headerRow.innerHTML = '<th class="py-3 px-4 w-24 sticky-time-col">Horário</th>';
+        tbody.innerHTML = '';
+
+        if (profs.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td colspan="100%" class="py-12 text-center text-slate-500 text-xs">
+              <i class="fa-solid fa-users-slash text-2xl mb-2 block text-slate-600"></i>
+              Nenhum profissional cadastrado no momento.
+              ${Auth.isAdmin() ? '<br><button onclick="UI.switchTab(\'aba5\')" class="mt-3 text-brand-400 font-semibold hover:underline">Clique aqui para cadastrar</button>' : ''}
+            </td>
+          `;
+          tbody.appendChild(tr);
+          return;
+        }
+
+        // Renderiza Colunas dos Profissionais
+        profs.forEach(p => {
+          const th = document.createElement('th');
+          th.className = 'py-3 px-4 min-w-[180px] border-l border-slate-800/80';
+          th.innerHTML = `
+            <div class="font-bold text-slate-200 text-xs">${p.nome}</div>
+            <div class="text-[10px] text-brand-400 font-normal lowercase">${p.especialidade}</div>
+          `;
+          headerRow.appendChild(th);
+        });
+
+        // Renderiza Linhas dos Horários
+        Agenda.HORARIOS.forEach(hora => {
+          const tr = document.createElement('tr');
+          let rowHTML = `<td class="py-3 px-4 font-mono font-semibold text-slate-400 sticky-time-col">${hora}</td>`;
+
+          profs.forEach(p => {
+            const agendamento = agends.find(a => a.profissionalId === p.id && a.horario === hora);
+            
+            if (agendamento) {
+              rowHTML += `
+                <td class="py-2 px-3 border-l border-slate-800/60">
+                  <div class="bg-slate-800/90 border-l-4 border-brand-500 p-2 rounded-r-xl flex items-center justify-between group">
+                    <div class="overflow-hidden">
+                      <span class="font-bold text-slate-100 block truncate">${agendamento.cliente}</span>
+                      <span class="text-[10px] text-brand-400 block truncate">
+                        <i class="fa-solid fa-scissors text-[9px] mr-1"></i>${agendamento.servico}
+                      </span>
+                    </div>
+                    ${Auth.isAdmin() ? `
+                      <button onclick="App.handleDeleteAgendamento('${agendamento.id}')" title="Excluir Agendamento" class="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 transition-all p-1">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                      </button>
+                    ` : ''}
+                  </div>
+                </td>
+              `;
+            } else {
+              rowHTML += `<td class="py-3 px-4 border-l border-slate-800/40 text-slate-700 text-[10px] select-none">Disponível</td>`;
+            }
+          });
+
+          tr.innerHTML = rowHTML;
+          tbody.appendChild(tr);
+        });
+      },
+
+      renderFormAgendamentoOptions() {
+        const select = document.getElementById('agendamento-profissional');
+        if (!select) return;
+
+        select.innerHTML = '';
+        const profs = Profissionais.getAll();
+
+        if (profs.length === 0) {
+          select.innerHTML = '<option value="">Nenhum profissional disponível</option>';
+          select.disabled = true;
+          return;
+        }
+
+        select.disabled = false;
+        profs.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = `${p.nome} (${p.especialidade})`;
+          select.appendChild(opt);
+        });
+      },
+
+      renderProfissionaisGestao() {
+        const container = document.getElementById('lista-profissionais-gestao');
+        if (!container) return;
+
+        container.innerHTML = '';
+        const profs = Profissionais.getAll();
+
+        if (profs.length === 0) {
+          container.innerHTML = '<p class="text-xs text-slate-500 col-span-full">Nenhum profissional cadastrado.</p>';
+          return;
+        }
+
+        profs.forEach(p => {
+          const card = document.createElement('div');
+          card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between';
+          card.innerHTML = `
+            <div>
+              <h4 class="text-xs font-bold text-white">${p.nome}</h4>
+              <p class="text-[10px] text-brand-400">${p.especialidade}</p>
+            </div>
+            <button onclick="App.handleDeleteProfissional('${p.id}')" class="p-2 text-slate-500 hover:text-rose-400 transition-colors">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          `;
+          container.appendChild(card);
+        });
+      }
+    };
+
+    /* ==========================================================================
+       MÓDULO: APP (Controlador Principal, Handlers e Inicialização)
+       ========================================================================== */
+    const App = {
+      init() {
+        Auth.init();
+        UI.renderState();
+        UI.switchTab('aba0');
+      },
+
+      handleLogin(e) {
+        e.preventDefault();
+        try {
+          const email = document.getElementById('login-email').value;
+          const pass = document.getElementById('login-password').value;
+          const role = document.getElementById('login-role').value;
+
+          Auth.login(email, pass, role);
+          UI.renderState();
+          UI.toast("Login realizado com sucesso!");
+          UI.switchTab('aba3');
+        } catch (err) {
+          UI.toast(err.message, "error");
+        }
+      },
+
+      handleCreateProfissional(e) {
+        e.preventDefault();
+        try {
+          const nomeInput = document.getElementById('profissional-nome');
+          const especInput = document.getElementById('profissional-especialidade');
+
+          Profissionais.add(nomeInput.value, especInput.value);
           
-          // Adiciona o usuário atual na lista do salão se ainda não estiver
-          const jaExisteNaLista = estabelecimentosDB[codigoUpper].profissionais.some(p => p.id === usuarioLogado.id);
-          if (!jaExisteNaLista) {
-            estabelecimentosDB[codigoUpper].profissionais.push({
-              id: usuarioLogado.id,
-              nome: `${estabelecimentosDB[codigoUpper].profissionais.length + 1}. ${usuarioLogado.nome}`
-            });
-            salvarEstabelecimentosNoLocalStorage();
-          }
+          nomeInput.value = '';
+          especInput.value = '';
 
-          alterarEstabelecimentoAtivo(codigoUpper);
-          atualizarSeletorEstabelecimentos();
-          alert(`Vinculado com sucesso ao salão: ${estabelecimentosDB[codigoUpper].nome}`);
-        } else {
-          alert("Você já possui vínculo com este estabelecimento!");
+          UI.toast("Profissional cadastrado com sucesso!");
+          UI.renderProfissionaisGestao();
+          UI.updateCounters();
+        } catch (err) {
+          UI.toast(err.message, "error");
         }
-      } else {
-        alert("Código de estabelecimento não encontrado. Verifique e tente novamente.");
+      },
+
+      handleDeleteProfissional(id) {
+        if (!confirm("Tem certeza que deseja excluir este profissional? Todos os agendamentos associados serão removidos.")) {
+          return;
+        }
+
+        try {
+          Profissionais.remove(id);
+          UI.toast("Profissional e agendamentos associados removidos.", "info");
+          UI.renderProfissionaisGestao();
+          UI.updateCounters();
+        } catch (err) {
+          UI.toast(err.message, "error");
+        }
+      },
+
+      handleCreateAgendamento(e) {
+        e.preventDefault();
+        try {
+          const profId = document.getElementById('agendamento-profissional').value;
+          const hora = document.getElementById('agendamento-horario').value;
+          const cliente = document.getElementById('cliente-nome').value;
+          const servico = document.getElementById('cliente-servico').value;
+
+          Agenda.add(profId, hora, cliente, servico);
+
+          document.getElementById('cliente-nome').value = '';
+          document.getElementById('cliente-servico').value = '';
+
+          UI.toast("Agendamento cadastrado com sucesso!");
+          UI.switchTab('aba3');
+        } catch (err) {
+          UI.toast(err.message, "error");
+        }
+      },
+
+      handleDeleteAgendamento(id) {
+        if (!confirm("Tem certeza que deseja cancelar este agendamento?")) {
+          return;
+        }
+
+        try {
+          Agenda.remove(id);
+          UI.toast("Agendamento removido.", "info");
+          UI.renderGridAgenda();
+        } catch (err) {
+          UI.toast(err.message, "error");
+        }
       }
-    }
+    };
 
-    function atualizarSelectFormularioAgendamento() {
-      const selectForm = document.getElementById('agendamento-profissional');
-      if (!selectForm) return;
-
-      selectForm.innerHTML = '';
-      const salaoAtivo = estabelecimentosDB[usuarioLogado.estabelecimentoAtivoId];
-
-      if (salaoAtivo) {
-        salaoAtivo.profissionais.forEach(prof => {
-          const option = document.createElement('option');
-          option.value = prof.id;
-          option.textContent = prof.nome;
-          selectForm.appendChild(option);
-        });
-      }
-    }
-
-    // RENDERIZAÇÃO DA GRADE COM CARREGAMENTO DO LOCALSTORAGE
-    function renderizarGridAgenda() {
-      const headerRow = document.getElementById('grid-header-row');
-      const tbody = document.getElementById('grid-horarios-body');
-      if (!tbody || !headerRow) return;
-
-      const salaoAtivoId = usuarioLogado.estabelecimentoAtivoId;
-      const salaoAtivo = estabelecimentosDB[salaoAtivoId];
-      if (!salaoAtivo) return;
-
-      // Cabeçalho da Tabela
-      headerRow.innerHTML = `<th class="py-3 px-4 w-24 sticky-time-col">Horário</th>`;
-      salaoAtivo.profissionais.forEach(prof => {
-        headerRow.innerHTML += `<th class="py-3 px-4 min-w-[150px]">${prof.nome}</th>`;
-      });
-
-      // Corpo da Tabela
-      tbody.innerHTML = '';
-      listaHorarios.forEach(hora => {
-        const horaFormatada = hora.replace(':', '-');
-        const tr = document.createElement('tr');
-        
-        let htmlRow = `<td class="py-3 px-4 font-mono font-semibold text-slate-400 sticky-time-col">${hora}</td>`;
-        
-        salaoAtivo.profissionais.forEach(prof => {
-          const slotKey = `${salaoAtivoId}_${prof.id}_${horaFormatada}`;
-          const agendamento = agendamentosDB[slotKey];
-
-          if (agendamento) {
-            htmlRow += `
-              <td class="py-2 px-3 border-l border-slate-800/40">
-                <div class="bg-slate-800/90 border-l-4 border-brand-500 p-2 rounded-r-xl shadow-md relative group">
-                  <span class="font-bold text-slate-100 block truncate">${agendamento.cliente}</span>
-                  <span class="text-[10px] text-brand-400 block truncate"><i class="fa-solid fa-scissors"></i> ${agendamento.servico}</span>
-                  <span class="text-[9px] text-slate-400 block truncate" title="${agendamento.email}"><i class="fa-solid fa-envelope"></i> ${agendamento.email}</span>
-                  <button onclick="removerAgendamento('${slotKey}')" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-400 text-xs p-1 transition-all" title="Cancelar Agendamento">
-                    <i class="fa-solid fa-trash"></i>
-                  </button>
-                </div>
-              </td>
-            `;
-          } else {
-            htmlRow += `<td class="py-2 px-3 border-l border-slate-800/40"><div class="text-slate-600 italic text-[11px]">Disponível</div></td>`;
-          }
-        });
-
-        tr.innerHTML = htmlRow;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // REGISTRO E SALVAMENTO NO LOCALSTORAGE POR EMAIL
-    function cadastrarClienteEAgendar(e) {
-      e.preventDefault();
-      const prof = document.getElementById('agendamento-profissional').value;
-      const hora = document.getElementById('agendamento-horario').value;
-      const cliente = document.getElementById('cliente-nome').value.trim();
-      const emailCliente = document.getElementById('cliente-email').value.trim().toLowerCase();
-      const servico = document.getElementById('cliente-servico').value.trim();
-      const salaoAtivoId = usuarioLogado.estabelecimentoAtivoId;
-
-      const slotKey = `${salaoAtivoId}_${prof}_${hora}`;
-
-      // Salva no objeto local
-      agendamentosDB[slotKey] = {
-        salaoId: salaoAtivoId,
-        profissionalId: prof,
-        horario: hora,
-        cliente: cliente,
-        email: emailCliente,
-        servico: servico,
-        criadoEm: new Date().toISOString()
-      };
-
-      // Persiste no LocalStorage
-      salvarAgendamentosNoLocalStorage();
-
-      // Recarrega a grade e limpa o formulário
-      renderizarGridAgenda();
-      document.getElementById('form-cadastro-cliente').reset();
-      
-      // Mantém o e-mail do usuário logado preenchido para o próximo cadastro
-      document.getElementById('cliente-email').value = usuarioLogado.email;
-
-      alert("Agendamento salvo com sucesso no LocalStorage!");
-      switchTab('aba3');
-    }
-
-    // CANCELAR / REMOVER AGENDAMENTO DO LOCALSTORAGE
-    function removerAgendamento(slotKey) {
-      if (confirm("Deseja realmente cancelar este agendamento?")) {
-        delete agendamentosDB[slotKey];
-        salvarAgendamentosNoLocalStorage();
-        renderizarGridAgenda();
-      }
-    }
-
-    // INICIALIZAÇÃO DA APLICAÇÃO
-    document.addEventListener('DOMContentLoaded', () => {
-      carregarDadosDoLocalStorage();
-      atualizarSeletorEstabelecimentos();
-      atualizarSelectFormularioAgendamento();
-      renderizarGridAgenda();
-      switchTab('aba0');
-    });
+    // Inicialização da Aplicação
+    document.addEventListener('DOMContentLoaded', () => App.init());
   </script>
 </body>
 </html>
