@@ -444,19 +444,39 @@
   <!-- JAVASCRIPT -->
   <!-- ========================================== -->
   <script>
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyC_PLACEHOLDER", // Você precisa adicionar sua chave
-      authDomain: "hairconcept-PLACEHOLDER.firebaseapp.com",
-      projectId: "hairconcept-PLACEHOLDER",
-      storageBucket: "hairconcept-PLACEHOLDER.appspot.com",
-      messagingSenderId: "PLACEHOLDER",
-      appId: "PLACEHOLDER"
-    };
-
-    // Initialize Firebase (será ativado quando configurar)
+    // Variables loaded from /api/config
+    let firebaseConfig = {};
+    let stripePublishableKey = '';
     let currentUser = null;
     let currentPlan = 'free';
+
+    // Load configuration from API on startup
+    async function loadConfig() {
+      try {
+        const response = await fetch('/api/config');
+        const config = await response.json();
+        
+        firebaseConfig = config.firebase;
+        stripePublishableKey = config.stripe.publishableKey;
+        
+        // Log if config is loaded (but don't expose secrets)
+        console.log('✅ Configuration loaded from API');
+        
+        // Initialize Firebase if config is available
+        if (firebaseConfig.projectId) {
+          if (typeof firebase !== 'undefined') {
+            firebase.initializeApp(firebaseConfig);
+            console.log('✅ Firebase initialized');
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Could not load config from API:', error);
+        console.log('Using demo/fallback mode');
+      }
+    }
+
+    // Load config when page loads
+    document.addEventListener('DOMContentLoaded', loadConfig);
 
     // ========================================== //
     // NAVIGATION FUNCTIONS
