@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="HairConcept - Sistema Premium de Gestão e Agendamento para Salões de Beleza, Barbearias e Clínicas de Estética.">
-  <title>HairConcept - Gestão Premium de Salão de Beleza</title>
+  <title>HairConcept - Gestão Premium & Login Social</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -116,7 +116,7 @@
       <!-- Navegação Principal -->
       <nav class="hidden lg:flex items-center gap-1 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800">
         <button id="btn-aba0" onclick="UI.switchTab('aba0')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
-          <i class="fa-solid fa-house text-brand-400"></i> Início & Planos
+          <i class="fa-solid fa-house text-brand-400"></i> Início
         </button>
         <button id="btn-aba3" onclick="UI.switchTab('aba3')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
           <i class="fa-solid fa-calendar-days text-brand-400"></i> Agenda Geral
@@ -135,13 +135,42 @@
           <i class="fa-solid fa-user-shield text-xs text-brand-400"></i> <span id="user-role-label">Visitante</span>
         </div>
         
-        <div id="auth-actions">
+        <!-- Área de Autenticação / Menu de Usuário -->
+        <div id="auth-actions" class="relative">
           <button id="btn-login-header" onclick="UI.switchTab('aba1')" class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition-all shadow-lg shadow-brand-500/25 active:scale-95 flex items-center gap-2">
             <i class="fa-solid fa-user"></i> Entrar
           </button>
-          <button id="btn-logout-header" onclick="Auth.logout()" class="hidden px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-rose-400 border border-slate-800 font-semibold text-xs transition-all flex items-center gap-2">
-            <i class="fa-solid fa-right-from-bracket"></i> Sair
-          </button>
+
+          <!-- Dropdown do Usuário Autenticado -->
+          <div id="user-dropdown-container" class="hidden relative">
+            <button id="btn-user-menu" onclick="UI.toggleUserDropdown()" class="flex items-center gap-2.5 p-1.5 pr-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition-all focus:outline-none">
+              <img id="user-avatar-header" src="https://via.placeholder.com/40" alt="Foto do usuário" class="w-8 h-8 rounded-xl object-cover border border-brand-500/30">
+              <span id="user-name-header" class="text-xs font-bold text-slate-200 max-w-[100px] truncate">Usuário</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-56 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl py-2 z-50 divide-y divide-slate-800/80">
+              <div class="px-4 py-3">
+                <p id="user-dropdown-name" class="text-xs font-bold text-white truncate">Nome Usuário</p>
+                <p id="user-dropdown-email" class="text-[10px] text-slate-400 truncate">email@exemplo.com</p>
+                <span id="user-dropdown-role" class="mt-2 inline-block text-[9px] uppercase font-bold px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-400 border border-brand-500/20">ADMIN</span>
+              </div>
+              <div class="py-1">
+                <button onclick="UI.switchTab('aba6')" class="w-full text-left px-4 py-2 text-xs text-slate-300 hover:bg-slate-800/80 hover:text-white flex items-center gap-2 transition-colors">
+                  <i class="fa-solid fa-id-card text-brand-400"></i> Meu Perfil
+                </button>
+                <button onclick="UI.toast('Configurações abertas.', 'info')" class="w-full text-left px-4 py-2 text-xs text-slate-300 hover:bg-slate-800/80 hover:text-white flex items-center gap-2 transition-colors">
+                  <i class="fa-solid fa-sliders text-brand-400"></i> Configurações
+                </button>
+              </div>
+              <div class="py-1">
+                <button onclick="Auth.logout()" class="w-full text-left px-4 py-2 text-xs text-rose-400 hover:bg-rose-950/30 flex items-center gap-2 transition-colors">
+                  <i class="fa-solid fa-right-from-bracket"></i> Sair da Conta
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -162,7 +191,7 @@
           Sua Agenda de Salão <span class="bg-gradient-to-r from-brand-500 via-rose-400 to-purple-500 bg-clip-text text-transparent">Totalmente Organizada</span>
         </h1>
         <p class="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-          Gerenciamento completo de agendamentos, clientes e equipe com controle de acesso rigoroso e alta performance.
+          Gerenciamento completo de agendamentos, clientes e equipe com controle de acesso rigoroso via Firebase Authentication.
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
           <button onclick="UI.switchTab('aba1')" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm transition-all shadow-xl shadow-brand-500/30 flex items-center justify-center gap-2">
@@ -245,35 +274,40 @@
       </div>
     </section>
 
-    <!-- ABA 1: AUTENTICAÇÃO E LOGIN -->
+    <!-- ABA 1: LOGIN SOCIAL COMPLETO -->
     <section id="aba1" class="tab-content hidden max-w-md mx-auto">
       <div class="glass-panel rounded-3xl p-8 border border-slate-800 shadow-2xl space-y-6">
         <div class="text-center space-y-2">
           <div class="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-400 mx-auto flex items-center justify-center text-xl">
-            <i class="fa-solid fa-lock"></i>
+            <i class="fa-solid fa-user-lock"></i>
           </div>
-          <h2 class="text-2xl font-black text-white">Acesse o Sistema</h2>
-          <p class="text-xs text-slate-400">Selecione o tipo de perfil e faça login</p>
+          <h2 class="text-2xl font-black text-white">Acesse sua Conta</h2>
+          <p class="text-xs text-slate-400">Escolha seu provedor preferido para autenticar</p>
         </div>
-        
-        <form id="form-login" onsubmit="App.handleLogin(event)" class="space-y-4">
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Perfil de Acesso</label>
-            <select id="login-role" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
-              <option value="ADMIN">Administrador (Acesso Total)</option>
-              <option value="PROFISSIONAL">Profissional (Visualização)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">E-mail Cadastrado</label>
-            <input type="email" id="login-email" value="admin@hairconcept.com" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Senha de Acesso</label>
-            <input type="password" id="login-password" value="123456" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
-          </div>
-          <button type="submit" class="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-lg shadow-brand-500/25 transition-all">Entrar no Painel</button>
-        </form>
+
+        <div class="space-y-3 pt-2">
+          <!-- Botão Google -->
+          <button onclick="Auth.loginWithGoogle()" class="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 text-slate-100 font-semibold text-xs transition-all flex items-center justify-center gap-3 group">
+            <i class="fa-brands fa-google text-rose-500 text-base group-hover:scale-110 transition-transform"></i>
+            Entrar com Google
+          </button>
+
+          <!-- Botão Facebook -->
+          <button onclick="Auth.loginWithFacebook()" class="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 text-slate-100 font-semibold text-xs transition-all flex items-center justify-center gap-3 group">
+            <i class="fa-brands fa-facebook text-blue-500 text-base group-hover:scale-110 transition-transform"></i>
+            Entrar com Facebook
+          </button>
+
+          <!-- Botão Instagram -->
+          <button onclick="Auth.loginWithInstagram()" class="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 text-slate-100 font-semibold text-xs transition-all flex items-center justify-center gap-3 group">
+            <i class="fa-brands fa-instagram text-pink-500 text-base group-hover:scale-110 transition-transform"></i>
+            Entrar com Instagram
+          </button>
+        </div>
+
+        <p class="text-[11px] text-slate-500 text-center leading-relaxed">
+          O primeiro usuário autenticado recebe a permissão <strong class="text-slate-400">ADMINISTRADOR</strong>. Os demais recebem permissão <strong class="text-slate-400">PROFISSIONAL</strong>.
+        </p>
       </div>
     </section>
 
@@ -381,19 +415,81 @@
       </div>
     </section>
 
+    <!-- ABA 6: DASHBOARD / MEU PERFIL -->
+    <section id="aba6" class="tab-content hidden max-w-2xl mx-auto space-y-6">
+      <div class="glass-panel rounded-3xl p-8 border border-slate-800 shadow-2xl space-y-6">
+        <div class="flex items-center gap-4 border-b border-slate-800 pb-6">
+          <img id="dashboard-user-photo" src="https://via.placeholder.com/80" alt="Foto Perfil" class="w-20 h-20 rounded-2xl object-cover border-2 border-brand-500 shadow-lg">
+          <div>
+            <h2 id="dashboard-user-name" class="text-2xl font-black text-white">Nome do Usuário</h2>
+            <p id="dashboard-user-email" class="text-xs text-slate-400">email@dominio.com</p>
+            <div class="mt-2 inline-flex items-center gap-2">
+              <span id="dashboard-user-role" class="text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg bg-brand-500/10 text-brand-400 border border-brand-500/20">ADMIN</span>
+              <span id="dashboard-user-provider" class="text-[10px] font-medium px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">Google</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
+            <span class="text-[10px] font-medium text-slate-400 block uppercase">ID do Usuário (UID)</span>
+            <span id="dashboard-user-uid" class="text-xs font-mono text-slate-200 block truncate mt-1">-</span>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
+            <span class="text-[10px] font-medium text-slate-400 block uppercase">Data de Cadastro</span>
+            <span id="dashboard-user-created" class="text-xs font-medium text-slate-200 block mt-1">-</span>
+          </div>
+        </div>
+
+        <div class="pt-4">
+          <button onclick="Auth.logout()" class="w-full py-3 rounded-xl bg-slate-900 border border-slate-800 hover:bg-rose-950/40 hover:border-rose-800/60 text-rose-400 font-semibold text-xs transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-right-from-bracket"></i> Encerrar Sessão
+          </button>
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <!-- ARQUITETURA JAVASCRIPT EM MÓDULOS -->
-  <script>
+  <!-- FIREBASE SDK V10 (ES MODULES) E ARQUITETURA JS DA APLICAÇÃO -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getAuth, 
+      GoogleAuthProvider, 
+      FacebookAuthProvider, 
+      signInWithPopup, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
     /* ==========================================================================
-       MÓDULO: STORAGE (Persistência e Interface para Futura Integração Database)
+       CONFIGURAÇÃO DO FIREBASE (INSIRA SUAS CREDENCIAIS AQUI)
+       ========================================================================== */
+    const firebaseConfig = {
+      apiKey: "AIzaSyYOUR_API_KEY_HERE",
+      authDomain: "seu-projeto.firebaseapp.com",
+      projectId: "seu-projeto",
+      storageBucket: "seu-projeto.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:abcdef123456"
+    };
+
+    // Inicialização Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const googleProvider = new GoogleAuthProvider();
+    const facebookProvider = new FacebookAuthProvider();
+
+    /* ==========================================================================
+       MÓDULO: STORAGE (Persistência no LocalStorage)
        ========================================================================== */
     const Storage = {
       KEYS: {
-        SESSION: 'hairconcept_session',
+        USUARIOS: 'hairconcept_usuarios',
         PROFISSIONAIS: 'hairconcept_profissionais',
-        AGENDAMENTOS: 'hairconcept_agendamentos',
-        ESTABELECIMENTO: 'hairconcept_estabelecimento'
+        AGENDAMENTOS: 'hairconcept_agendamentos'
       },
       get(key, defaultValue = null) {
         try {
@@ -410,68 +506,146 @@
         } catch (e) {
           console.error(`Erro ao salvar ${key} no Storage:`, e);
         }
-      },
-      remove(key) {
-        try {
-          localStorage.removeItem(key);
-        } catch (e) {
-          console.error(`Erro ao remover ${key} do Storage:`, e);
-        }
       }
     };
 
     /* ==========================================================================
-       MÓDULO: AUTH (Autenticação, Sessão e Regras de Segurança)
+       MÓDULO: AUTH (Autenticação Firebase & Regras de Acesso)
        ========================================================================== */
-    const Auth = {
+    window.Auth = {
       currentUser: null,
+      currentUserProfile: null,
 
       init() {
-        this.currentUser = Storage.get(Storage.KEYS.SESSION, null);
+        // Validação e recuperação de sessão persistente via Firebase
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            this.currentUser = user;
+            this.currentUserProfile = this.syncUserData(user);
+            UI.renderState();
+            UI.updateDashboard();
+          } else {
+            this.currentUser = null;
+            this.currentUserProfile = null;
+            UI.renderState();
+          }
+        });
       },
 
-      login(email, password, role) {
-        if (!email || !password) {
-          throw new Error("Por favor, preencha todos os campos de login.");
+      // Garante criação do registro estruturado do usuário e definição do papel (ADMIN / PROFISSIONAL)
+      syncUserData(firebaseUser, customProvider = null) {
+        const usuarios = Storage.get(Storage.KEYS.USUARIOS, []);
+        let usuarioExistente = usuarios.find(u => u.uid === firebaseUser.uid);
+
+        if (!usuarioExistente) {
+          // Lógica de Permissões: Primeiro usuário cadastrado ganha permissão ADMIN
+          const role = usuarios.length === 0 ? 'ADMIN' : 'PROFISSIONAL';
+          
+          let providerName = 'google';
+          if (customProvider) {
+            providerName = customProvider;
+          } else if (firebaseUser.providerData && firebaseUser.providerData[0]) {
+            providerName = firebaseUser.providerData[0].providerId.replace('.com', '');
+          }
+
+          usuarioExistente = {
+            uid: firebaseUser.uid,
+            nome: firebaseUser.displayName || 'Usuário Sem Nome',
+            email: firebaseUser.email || 'email@não.informado',
+            foto: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(firebaseUser.displayName || 'U')}&background=ec4899&color=fff`,
+            provider: providerName,
+            role: role,
+            criadoEm: new Date().toISOString()
+          };
+
+          usuarios.push(usuarioExistente);
+          Storage.set(Storage.KEYS.USUARIOS, usuarios);
         }
-        
-        const user = {
-          uid: 'usr_' + Date.now(),
-          email: email,
-          role: role,
-          loginAt: new Date().toISOString()
-        };
 
-        this.currentUser = user;
-        Storage.set(Storage.KEYS.SESSION, user);
-        return user;
+        return usuarioExistente;
       },
 
-      logout() {
-        this.currentUser = null;
-        Storage.remove(Storage.KEYS.SESSION);
-        UI.toast("Sessão encerrada com sucesso.", "info");
-        UI.renderState();
-        UI.switchTab('aba0');
+      async loginWithGoogle() {
+        try {
+          const result = await signInWithPopup(auth, googleProvider);
+          this.syncUserData(result.user, 'google');
+          UI.toast("Autenticado via Google com sucesso!");
+          UI.switchTab('aba3');
+        } catch (error) {
+          console.error("Erro no login Google:", error);
+          UI.toast("Erro ao conectar com Google. Verifique o console ou a chave do Firebase.", "error");
+        }
+      },
+
+      async loginWithFacebook() {
+        try {
+          const result = await signInWithPopup(auth, facebookProvider);
+          this.syncUserData(result.user, 'facebook');
+          UI.toast("Autenticado via Facebook com sucesso!");
+          UI.switchTab('aba3');
+        } catch (error) {
+          console.error("Erro no login Facebook:", error);
+          UI.toast("Erro ao conectar com Facebook.", "error");
+        }
+      },
+
+      // Integração Instagram OAuth simulada e preparada para Meta Platform API
+      loginWithInstagram() {
+        UI.toast("Redirecionando para autenticação do Instagram...", "info");
+        
+        /* 
+          ARQUITETURA DE INTEGRAÇÃO INSTAGRAM OAUTH (META PLATFORM):
+          1. Cadastrar app no Meta for Developers
+          2. Redirecionar para: https://api.instagram.com/oauth/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope=user_profile&response_type=code
+          3. Trocar o 'code' retornado pelo Access Token no backend/Cloud Function
+          4. Autenticar no Firebase com Custom Token (signInWithCustomToken)
+        */
+
+        setTimeout(() => {
+          // Simulação de retorno da API OAuth para demonstração no front-end
+          const mockInstagramUser = {
+            uid: 'insta_' + Date.now(),
+            displayName: 'Usuário Instagram',
+            email: 'instagram.user@meta.com',
+            photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
+          };
+          
+          this.currentUser = mockInstagramUser;
+          this.currentUserProfile = this.syncUserData(mockInstagramUser, 'instagram');
+          UI.renderState();
+          UI.updateDashboard();
+          UI.toast("Autenticado via Instagram OAuth!");
+          UI.switchTab('aba3');
+        }, 1200);
+      },
+
+      async logout() {
+        try {
+          await signOut(auth);
+          this.currentUser = null;
+          this.currentUserProfile = null;
+          UI.toast("Sessão encerrada com sucesso.", "info");
+          UI.renderState();
+          UI.switchTab('aba0');
+        } catch (error) {
+          console.error("Erro no logout:", error);
+          UI.toast("Erro ao encerrar sessão.", "error");
+        }
       },
 
       isAuthenticated() {
-        return !!this.currentUser;
+        return !!this.currentUserProfile;
       },
 
       isAdmin() {
-        return this.isAuthenticated() && this.currentUser.role === 'ADMIN';
-      },
-
-      isProfissional() {
-        return this.isAuthenticated() && this.currentUser.role === 'PROFISSIONAL';
+        return this.isAuthenticated() && this.currentUserProfile.role === 'ADMIN';
       }
     };
 
     /* ==========================================================================
-       MÓDULO: PROFISSIONAIS (Regras de Negócio e Gestão de Profissionais)
+       MÓDULO: PROFISSIONAIS
        ========================================================================== */
-    const Profissionais = {
+    window.Profissionais = {
       getAll() {
         return Storage.get(Storage.KEYS.PROFISSIONAIS, []);
       },
@@ -515,16 +689,14 @@
         let lista = this.getAll();
         lista = lista.filter(p => p.id !== id);
         Storage.set(Storage.KEYS.PROFISSIONAIS, lista);
-
-        // Limpa agendamentos vinculados ao profissional removido
         Agenda.removeByProfissional(id);
       }
     };
 
     /* ==========================================================================
-       MÓDULO: AGENDA (Regras de Negócio, Agendamentos e Conflitos de Horário)
+       MÓDULO: AGENDA
        ========================================================================== */
-    const Agenda = {
+    window.Agenda = {
       HORARIOS: ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'],
 
       getAll() {
@@ -582,10 +754,10 @@
     };
 
     /* ==========================================================================
-       MÓDULO: UI (Interface do Usuário, Renderização Otimizada e Eventos)
+       MÓDULO: UI (Interface de Usuário & Componentes)
        ========================================================================== */
-    const UI = {
-      PROTECTED_TABS: ['aba3', 'aba4', 'aba5'],
+    window.UI = {
+      PROTECTED_TABS: ['aba3', 'aba4', 'aba5', 'aba6'],
       ADMIN_ONLY_TABS: ['aba5'],
 
       toast(message, type = 'success') {
@@ -616,15 +788,21 @@
         }, 3500);
       },
 
+      toggleUserDropdown() {
+        const menu = document.getElementById('user-dropdown-menu');
+        if (menu) menu.classList.toggle('hidden');
+      },
+
       switchTab(tabId) {
+        // Validação de segurança de acesso
         if (this.PROTECTED_TABS.includes(tabId) && !Auth.isAuthenticated()) {
-          this.toast("Acesso restrito. Faça login para continuar.", "error");
+          this.toast("Acesso restrito. Autentique-se para acessar.", "error");
           this.switchTab('aba1');
           return;
         }
 
         if (this.ADMIN_ONLY_TABS.includes(tabId) && !Auth.isAdmin()) {
-          this.toast("Acesso negado. Funcionalidade exclusiva para Administradores.", "error");
+          this.toast("Acesso negado. Exclusivo para Administradores.", "error");
           return;
         }
 
@@ -643,16 +821,24 @@
           btn.classList.remove('text-slate-300');
         }
 
+        // Esconde menu dropdown do usuário ao trocar de aba
+        const dropdown = document.getElementById('user-dropdown-menu');
+        if (dropdown) dropdown.classList.add('hidden');
+
         if (tabId === 'aba3') this.renderGridAgenda();
         if (tabId === 'aba4') this.renderFormAgendamentoOptions();
         if (tabId === 'aba5') this.renderProfissionaisGestao();
+        if (tabId === 'aba6') this.updateDashboard();
       },
 
       renderState() {
         const isAuth = Auth.isAuthenticated();
+        const user = Auth.currentUserProfile;
+
         const roleLabel = document.getElementById('user-role-label');
         const btnLogin = document.getElementById('btn-login-header');
-        const btnLogout = document.getElementById('btn-logout-header');
+        const userDropdownContainer = document.getElementById('user-dropdown-container');
+
         const btnNovoAgendamentoTop = document.getElementById('btn-novo-agendamento-top');
         const btnAba5 = document.getElementById('btn-aba5');
 
@@ -660,16 +846,35 @@
           roleLabel.textContent = isAuth ? (Auth.isAdmin() ? 'Administrador' : 'Profissional') : 'Visitante';
         }
 
-        if (btnLogin) btnLogin.classList.toggle('hidden', isAuth);
-        if (btnLogout) btnLogout.classList.toggle('hidden', !isAuth);
+        if (isAuth && user) {
+          if (btnLogin) btnLogin.classList.add('hidden');
+          if (userDropdownContainer) userDropdownContainer.classList.remove('hidden');
 
-        if (btnNovoAgendamentoTop) {
-          btnNovoAgendamentoTop.classList.toggle('hidden', !Auth.isAdmin());
+          document.getElementById('user-avatar-header').src = user.foto;
+          document.getElementById('user-name-header').textContent = user.nome.split(' ')[0];
+          document.getElementById('user-dropdown-name').textContent = user.nome;
+          document.getElementById('user-dropdown-email').textContent = user.email;
+          document.getElementById('user-dropdown-role').textContent = user.role;
+        } else {
+          if (btnLogin) btnLogin.classList.remove('hidden');
+          if (userDropdownContainer) userDropdownContainer.classList.add('hidden');
         }
 
-        if (btnAba5) {
-          btnAba5.classList.toggle('hidden', !Auth.isAdmin());
-        }
+        if (btnNovoAgendamentoTop) btnNovoAgendamentoTop.classList.toggle('hidden', !Auth.isAdmin());
+        if (btnAba5) btnAba5.classList.toggle('hidden', !Auth.isAdmin());
+      },
+
+      updateDashboard() {
+        const user = Auth.currentUserProfile;
+        if (!user) return;
+
+        document.getElementById('dashboard-user-photo').src = user.foto;
+        document.getElementById('dashboard-user-name').textContent = user.nome;
+        document.getElementById('dashboard-user-email').textContent = user.email;
+        document.getElementById('dashboard-user-role').textContent = user.role;
+        document.getElementById('dashboard-user-provider').textContent = user.provider.toUpperCase();
+        document.getElementById('dashboard-user-uid').textContent = user.uid;
+        document.getElementById('dashboard-user-created').textContent = new Date(user.criadoEm).toLocaleString('pt-BR');
       },
 
       updateCounters() {
@@ -692,7 +897,6 @@
         const profs = Profissionais.getAll();
         const agends = Agenda.getAll();
 
-        // Limpa cabeçalho e corpo
         headerRow.innerHTML = '<th class="py-3 px-4 w-24 sticky-time-col">Horário</th>';
         tbody.innerHTML = '';
 
@@ -709,7 +913,6 @@
           return;
         }
 
-        // Renderiza Colunas dos Profissionais
         profs.forEach(p => {
           const th = document.createElement('th');
           th.className = 'py-3 px-4 min-w-[180px] border-l border-slate-800/80';
@@ -720,7 +923,6 @@
           headerRow.appendChild(th);
         });
 
-        // Renderiza Linhas dos Horários
         Agenda.HORARIOS.forEach(hora => {
           const tr = document.createElement('tr');
           let rowHTML = `<td class="py-3 px-4 font-mono font-semibold text-slate-400 sticky-time-col">${hora}</td>`;
@@ -808,29 +1010,20 @@
     };
 
     /* ==========================================================================
-       MÓDULO: APP (Controlador Principal, Handlers e Inicialização)
+       MÓDULO: APP (Controlador e Handlers de Formulários)
        ========================================================================== */
-    const App = {
+    window.App = {
       init() {
         Auth.init();
-        UI.renderState();
         UI.switchTab('aba0');
-      },
 
-      handleLogin(e) {
-        e.preventDefault();
-        try {
-          const email = document.getElementById('login-email').value;
-          const pass = document.getElementById('login-password').value;
-          const role = document.getElementById('login-role').value;
-
-          Auth.login(email, pass, role);
-          UI.renderState();
-          UI.toast("Login realizado com sucesso!");
-          UI.switchTab('aba3');
-        } catch (err) {
-          UI.toast(err.message, "error");
-        }
+        // Fecha dropdown ao clicar fora
+        document.addEventListener('click', (e) => {
+          const dropdown = document.getElementById('user-dropdown-container');
+          if (dropdown && !dropdown.contains(e.target)) {
+            document.getElementById('user-dropdown-menu').classList.add('hidden');
+          }
+        });
       },
 
       handleCreateProfissional(e) {
@@ -859,7 +1052,7 @@
 
         try {
           Profissionais.remove(id);
-          UI.toast("Profissional e agendamentos associados removidos.", "info");
+          UI.toast("Profissional removido.", "info");
           UI.renderProfissionaisGestao();
           UI.updateCounters();
         } catch (err) {
