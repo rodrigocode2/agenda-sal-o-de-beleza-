@@ -1,639 +1,1102 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HairConcept - Gestão para Salões & Barbearias</title>
+  <meta name="description" content="HairConcept - Sistema Premium de Gestão e Agendamento para Salões de Beleza, Barbearias e Clínicas de Estética.">
+  <title>HairConcept - Gestão Premium & Login Social</title>
 
-  <!-- Tailwind CSS & FontAwesome Icons -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fdf2f8',
+              100: '#fce7f3',
+              200: '#fbcfe8',
+              300: '#f9a8d4',
+              400: '#f472b6',
+              500: '#ec4899',
+              600: '#db2777',
+              700: '#be185d',
+              800: '#9d174d',
+              900: '#831843',
+              950: '#500724',
+            },
+            darkbg: {
+              50: '#0f172a',
+              100: '#0b1120',
+              200: '#070b15',
+              300: '#03050a',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- FontAwesome Icons & Google Fonts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
-  
-  <!-- Stripe -->
-  <script src="https://js.stripe.com/v3/"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    .agenda-scroll::-webkit-scrollbar {
-      height: 6px;
-      width: 6px;
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #03050a;
+      color: #f8fafc;
     }
-    .agenda-scroll::-webkit-scrollbar-track {
-      background: #020617;
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .agenda-scroll::-webkit-scrollbar-thumb {
-      background: #334155;
-      border-radius: 4px;
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
     }
-    .loading-spinner {
-      border: 3px solid rgba(241, 5, 90, 0.2);
-      border-top: 3px solid #f10556;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #070b15;
     }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #ec4899;
+    }
+    .tab-content {
+      transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
+    }
+    .tab-content.hidden {
+      display: none !important;
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    .sticky-time-col {
+      position: sticky;
+      left: 0;
+      z-index: 20;
+      background-color: #0f172a;
+      box-shadow: 4px 0 10px rgba(0, 0, 0, 0.5);
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen pb-12">
+<body class="bg-darkbg-300 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white custom-scrollbar">
 
-  <!-- ========================================== -->
-  <!-- MODAL DE LOADING -->
-  <!-- ========================================== -->
-  <div id="loading-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
-    <div class="text-center">
-      <div class="loading-spinner mx-auto mb-4"></div>
-      <p class="text-sm text-slate-300" id="loading-text">Carregando...</p>
-    </div>
-  </div>
+  <!-- NOTIFICAÇÕES TOAST -->
+  <div id="toast-container" class="fixed top-24 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
 
-  <!-- ========================================== -->
-  <!-- PÁGINA DE BOAS-VINDAS (Não Logado) -->
-  <!-- ========================================== -->
-  <div id="landing-page" class="hidden min-h-screen">
-    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 py-4">
-      <div class="max-w-7xl mx-auto flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center font-bold text-slate-950 shadow-lg shadow-pink-500/20">
-            <i class="fa-solid fa-scissors text-sm"></i>
-          </div>
-          <span class="font-bold tracking-tight">HairConcept <small class="text-xs text-pink-400 font-normal">[Gestão Premium]</small></span>
+  <!-- CABEÇALHO PRINCIPAL -->
+  <header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Logo -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="UI.switchTab('aba0')">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-600 to-rose-400 flex items-center justify-center shadow-lg shadow-brand-500/20">
+          <i class="fa-solid fa-scissors text-white text-xl"></i>
         </div>
-        <button onclick="goToLoginMode('login')" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-2 rounded-lg text-sm transition-all">
-          Entrar
-        </button>
+        <div>
+          <span class="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
+            HairConcept <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 tracking-wider">Gestão Premium</span>
+          </span>
+          <p class="text-[10px] text-slate-400 font-medium">Plataforma Avançada de Agendamentos</p>
+        </div>
       </div>
-    </header>
 
-    <main class="max-w-7xl mx-auto p-4 md:p-8">
-      <!-- HERO SECTION -->
-      <section class="py-16 text-center">
-        <h1 class="text-5xl md:text-6xl font-extrabold text-white mb-4">
-          Sua Agenda de Salão <span class="text-pink-500">Organizada</span>
+      <!-- Navegação Principal -->
+      <nav class="hidden lg:flex items-center gap-1 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800">
+        <button id="btn-aba0" onclick="UI.switchTab('aba0')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
+          <i class="fa-solid fa-house text-brand-400"></i> Início
+        </button>
+        <button id="btn-aba3" onclick="UI.switchTab('aba3')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
+          <i class="fa-solid fa-calendar-days text-brand-400"></i> Agenda Geral
+        </button>
+        <button id="btn-aba4" onclick="UI.switchTab('aba4')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
+          <i class="fa-solid fa-plus text-brand-400"></i> Novo Agendamento
+        </button>
+        <button id="btn-aba5" onclick="UI.switchTab('aba5')" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
+          <i class="fa-solid fa-users-gear text-brand-400"></i> Profissionais
+        </button>
+      </nav>
+
+      <!-- Ações do Usuário e Status -->
+      <div class="flex items-center gap-3">
+        <div id="role-indicator" class="hidden sm:flex text-xs px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 font-medium items-center gap-1.5">
+          <i class="fa-solid fa-user-shield text-xs text-brand-400"></i> <span id="user-role-label">Visitante</span>
+        </div>
+        
+        <!-- Área de Autenticação / Menu de Usuário -->
+        <div id="auth-actions" class="relative">
+          <button id="btn-login-header" onclick="UI.switchTab('aba1')" class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition-all shadow-lg shadow-brand-500/25 active:scale-95 flex items-center gap-2">
+            <i class="fa-solid fa-user"></i> Entrar
+          </button>
+
+          <!-- Dropdown do Usuário Autenticado -->
+          <div id="user-dropdown-container" class="hidden relative">
+            <button id="btn-user-menu" onclick="UI.toggleUserDropdown()" class="flex items-center gap-2.5 p-1.5 pr-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition-all focus:outline-none">
+              <img id="user-avatar-header" src="https://via.placeholder.com/40" alt="Foto do usuário" class="w-8 h-8 rounded-xl object-cover border border-brand-500/30">
+              <span id="user-name-header" class="text-xs font-bold text-slate-200 max-w-[100px] truncate">Usuário</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-56 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl py-2 z-50 divide-y divide-slate-800/80">
+              <div class="px-4 py-3">
+                <p id="user-dropdown-name" class="text-xs font-bold text-white truncate">Nome Usuário</p>
+                <p id="user-dropdown-email" class="text-[10px] text-slate-400 truncate">email@exemplo.com</p>
+                <span id="user-dropdown-role" class="mt-2 inline-block text-[9px] uppercase font-bold px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-400 border border-brand-500/20">ADMIN</span>
+              </div>
+              <div class="py-1">
+                <button onclick="UI.switchTab('aba6')" class="w-full text-left px-4 py-2 text-xs text-slate-300 hover:bg-slate-800/80 hover:text-white flex items-center gap-2 transition-colors">
+                  <i class="fa-solid fa-id-card text-brand-400"></i> Meu Perfil
+                </button>
+                <button onclick="UI.toast('Configurações abertas.', 'info')" class="w-full text-left px-4 py-2 text-xs text-slate-300 hover:bg-slate-800/80 hover:text-white flex items-center gap-2 transition-colors">
+                  <i class="fa-solid fa-sliders text-brand-400"></i> Configurações
+                </button>
+              </div>
+              <div class="py-1">
+                <button onclick="Auth.logout()" class="w-full text-left px-4 py-2 text-xs text-rose-400 hover:bg-rose-950/30 flex items-center gap-2 transition-colors">
+                  <i class="fa-solid fa-right-from-bracket"></i> Sair da Conta
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ÁREA DE CONTEÚDO PRINCIPAL -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- ABA 0: LANDING PAGE -->
+    <section id="aba0" class="tab-content space-y-16">
+      <div class="text-center max-w-4xl mx-auto pt-8 pb-4 space-y-6">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-medium">
+          <span class="flex h-2 w-2 rounded-full bg-brand-500 animate-pulse"></span>
+          Sistema Completo para Salões, Barbearias e Estética
+        </div>
+        <h1 class="text-4xl sm:text-6xl font-black text-white tracking-tight leading-tight">
+          Sua Agenda de Salão <span class="bg-gradient-to-r from-brand-500 via-rose-400 to-purple-500 bg-clip-text text-transparent">Totalmente Organizada</span>
         </h1>
-        <p class="text-xl text-slate-400 max-w-2xl mx-auto mb-8">
-          Gerenciamento completo de agendamentos, clientes e equipe. Tudo que você precisa para fazer seu salão prosperar.
+        <p class="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+          Gerenciamento completo de agendamentos, clientes e equipe com controle de acesso rigoroso via Firebase Authentication.
         </p>
-        <button onclick="goToLoginMode('signup')" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-8 py-4 rounded-lg text-lg transition-all shadow-lg shadow-pink-500/30">
-          Começar Teste Gratuito
-        </button>
-      </section>
-
-      <!-- PLANOS -->
-      <section class="py-16">
-        <h2 class="text-3xl font-bold text-center mb-12">Planos Simples e Diretos</h2>
-        
-        <div class="grid md:grid-cols-3 gap-6">
-          <!-- Plano Gratuito -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 hover:border-slate-700 transition-all">
-            <h3 class="text-2xl font-bold mb-2">Plano Gratuito</h3>
-            <p class="text-slate-400 mb-6">Para começar</p>
-            <div class="text-3xl font-bold mb-6">R$ 0<span class="text-sm text-slate-400">/mês</span></div>
-            <ul class="space-y-3 mb-8 text-sm">
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Até 50 agendamentos/mês</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> 1 profissional</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-xmark text-slate-600"></i> Histórico limitado</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-xmark text-slate-600"></i> Suporte por email</li>
-            </ul>
-            <button onclick="goToLoginMode('signup')" class="w-full bg-slate-950 border border-slate-800 hover:bg-slate-800 text-white font-semibold py-2 rounded-lg transition-all">
-              Começar Grátis
-            </button>
-          </div>
-
-          <!-- Plano Pro (Destaque) -->
-          <div class="bg-gradient-to-br from-pink-600/20 to-purple-600/10 border border-pink-500/30 rounded-2xl p-8 shadow-2xl shadow-pink-500/10 relative md:scale-105">
-            <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-pink-500 text-white px-4 py-1 rounded-full text-xs font-bold">
-              MAIS POPULAR
-            </div>
-            <h3 class="text-2xl font-bold mb-2">Plano Pro</h3>
-            <p class="text-slate-400 mb-6">Para salões em crescimento</p>
-            <div class="text-3xl font-bold mb-6">R$ 19,99<span class="text-sm text-slate-400">/mês</span></div>
-            <ul class="space-y-3 mb-8 text-sm">
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Agendamentos ilimitados</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Até 5 profissionais</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Histórico completo</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Suporte prioritário</li>
-            </ul>
-            <button onclick="goToLoginMode('signup')" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-pink-500/20">
-              Começar Agora
-            </button>
-          </div>
-
-          <!-- Plano Enterprise -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 hover:border-slate-700 transition-all">
-            <h3 class="text-2xl font-bold mb-2">Plano Enterprise</h3>
-            <p class="text-slate-400 mb-6">Para redes de salões</p>
-            <div class="text-3xl font-bold mb-6">Personalizado</div>
-            <ul class="space-y-3 mb-8 text-sm">
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Tudo do Pro</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Profissionais ilimitados</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Relatórios avançados</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Suporte 24/7</li>
-            </ul>
-            <button onclick="alert('Entre em contato: contato@hairconcept.com')" class="w-full bg-slate-950 border border-slate-800 hover:bg-slate-800 text-white font-semibold py-2 rounded-lg transition-all">
-              Solicitar Demo
-            </button>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <!-- ========================================== -->
-  <!-- TELA DE AUTENTICAÇÃO -->
-  <!-- ========================================== -->
-  <div id="auth-page" class="min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-md">
-      <!-- Login Form -->
-      <div id="login-form" class="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
-        <div class="flex items-center gap-2 mb-6 cursor-pointer" onclick="showLanding()">
-          <div class="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center font-bold text-slate-950">
-            <i class="fa-solid fa-scissors text-sm"></i>
-          </div>
-          <span class="font-bold">HairConcept</span>
-        </div>
-
-        <h2 class="text-2xl font-bold mb-2">Bem-vindo de volta</h2>
-        <p class="text-slate-400 text-sm mb-6">Faça login para acessar sua agenda</p>
-
-        <form onsubmit="loginWithEmail(event)" class="space-y-4">
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">E-mail</label>
-            <input id="login-email" type="email" required placeholder="seu@email.com" 
-              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Senha</label>
-            <input id="login-password" type="password" required placeholder="••••••••"
-              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
-          </div>
-
-          <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-xl transition-all">
-            Entrar
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+          <button onclick="UI.switchTab('aba1')" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm transition-all shadow-xl shadow-brand-500/30 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rocket"></i> Acessar o Painel
           </button>
-        </form>
-
-        <div class="mt-6 text-center">
-          <p class="text-sm text-slate-400">Não tem conta? <button onclick="goToLoginMode('signup')" class="text-pink-400 hover:text-pink-300 font-semibold">Criar uma</button></p>
+          <a href="#secao-planos" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold text-sm border border-slate-800 transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-tags"></i> Ver Planos e Preços
+          </a>
         </div>
       </div>
 
-      <!-- Signup Form -->
-      <div id="signup-form" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
-        <div class="flex items-center gap-2 mb-6 cursor-pointer" onclick="showLanding()">
-          <div class="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center font-bold text-slate-950">
-            <i class="fa-solid fa-scissors text-sm"></i>
-          </div>
-          <span class="font-bold">HairConcept</span>
+      <div id="secao-planos" class="space-y-8 pt-6">
+        <div class="text-center space-y-3">
+          <h2 class="text-3xl font-black text-white">Planos Simples e Transparentes</h2>
+          <p class="text-slate-400 text-xs sm:text-sm max-w-md mx-auto">Escolha o plano ideal para a escala do seu negócio.</p>
         </div>
 
-        <h2 class="text-2xl font-bold mb-2">Criar uma nova conta</h2>
-        <p class="text-slate-400 text-sm mb-6">Comece sua experiência gratuitamente</p>
-
-        <form onsubmit="signupWithEmail(event)" class="space-y-4">
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Nome do Salão</label>
-            <input id="signup-salon-name" type="text" required placeholder="Meu Salão"
-              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">E-mail</label>
-            <input id="signup-email" type="email" required placeholder="seu@email.com"
-              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Senha</label>
-            <input id="signup-password" type="password" required placeholder="••••••••"
-              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 transition-all">
-          </div>
-
-          <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-xl transition-all">
-            Criar Conta Gratuita
-          </button>
-        </form>
-
-        <div class="mt-6 text-center">
-          <p class="text-sm text-slate-400">Já tem conta? <button onclick="goToLoginMode('login')" class="text-pink-400 hover:text-pink-300 font-semibold">Entrar</button></p>
-        </div>
-      </div>
-
-      <!-- Planos de Upgrade -->
-      <div id="plans-form" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
-        <div class="flex items-center gap-2 mb-6 cursor-pointer" onclick="showLanding()">
-          <div class="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center font-bold text-slate-950">
-            <i class="fa-solid fa-scissors text-sm"></i>
-          </div>
-          <span class="font-bold">HairConcept</span>
-        </div>
-
-        <h2 class="text-2xl font-bold mb-2">Escolha seu plano</h2>
-        <p class="text-slate-400 text-sm mb-6">Sua conta foi criada! Agora selecione o plano.</p>
-
-        <div class="space-y-4">
-          <button onclick="selectPlan('free')" class="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl transition-all text-left p-4">
-            <div class="flex items-center justify-between">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+          <div class="glass-panel rounded-3xl p-8 flex flex-col justify-between border border-slate-800">
+            <div class="space-y-6">
               <div>
-                <div class="font-bold">Plano Gratuito</div>
-                <div class="text-xs text-slate-400">R$ 0/mês - Teste primeiro</div>
+                <h3 class="text-xl font-bold text-white">Plano Inicial</h3>
+                <p class="text-xs text-slate-400 mt-1">Para profissionais autônomos ou iniciantes</p>
               </div>
-              <i class="fa-solid fa-arrow-right"></i>
+              <div class="flex items-baseline gap-1">
+                <span class="text-4xl font-black text-white">R$ 0</span>
+                <span class="text-xs text-slate-400">/mês para sempre</span>
+              </div>
+              <ul class="space-y-3 text-xs text-slate-300">
+                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-brand-500"></i> Até 50 agendamentos mensais</li>
+                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-brand-500"></i> 1 Profissional ativo</li>
+                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-brand-500"></i> Visualização de agenda diária</li>
+              </ul>
             </div>
+            <button onclick="UI.switchTab('aba1')" class="mt-8 w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 font-semibold text-xs hover:bg-slate-800 transition-all">Ativar Plano Gratuito</button>
+          </div>
+
+          <div class="glass-panel rounded-3xl p-8 flex flex-col justify-between border-2 border-brand-500 relative shadow-2xl shadow-brand-500/10">
+            <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-brand-500 text-white font-bold text-[10px] uppercase tracking-widest px-4 py-1 rounded-full">
+              RECOMENDADO
+            </div>
+            <div class="space-y-6">
+              <div>
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">Plano Pro <i class="fa-solid fa-crown text-amber-400"></i></h3>
+                <p class="text-xs text-slate-400 mt-1">Para salões e barbearias em expansão</p>
+              </div>
+              <div class="flex items-baseline gap-1">
+                <span class="text-4xl font-black text-white">R$ 30</span>
+                <span class="text-xs text-slate-400">,00/mês</span>
+              </div>
+              <ul class="space-y-3 text-xs text-slate-200">
+                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-brand-400"></i> Agendamentos ilimitados</li>
+                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-brand-400"></i> Grade de Profissionais Dinâmica</li>
+                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-brand-400"></i> Notificações automáticas</li>
+                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-brand-400"></i> Múltiplos Perfis de Acesso</li>
+              </ul>
+            </div>
+            <button onclick="UI.switchTab('aba1')" class="mt-8 w-full py-3.5 px-4 rounded-xl bg-brand-500 text-white font-bold text-xs shadow-lg shadow-brand-500/30 hover:bg-brand-600 transition-all">Iniciar Teste de 7 Dias</button>
+          </div>
+
+          <div class="glass-panel rounded-3xl p-8 flex flex-col justify-between border border-slate-800">
+            <div class="space-y-6">
+              <div>
+                <h3 class="text-xl font-bold text-white">Plano Enterprise</h3>
+                <p class="text-xs text-slate-400 mt-1">Para grandes redes e franquias</p>
+              </div>
+              <div class="flex items-baseline gap-1">
+                <span class="text-4xl font-black text-white">R$ 199</span>
+                <span class="text-xs text-slate-400">,90/mês</span>
+              </div>
+              <ul class="space-y-3 text-xs text-slate-300">
+                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-purple-400"></i> TUDO do Plano Pro</li>
+                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-purple-400"></i> Múltiplicas unidades/filiais</li>
+                <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-purple-400"></i> Profissionais ilimitados</li>
+              </ul>
+            </div>
+            <button onclick="UI.switchTab('aba1')" class="mt-8 w-full py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs transition-all">Solicitar Demonstração</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABA 1: LOGIN SOCIAL COMPLETO -->
+    <section id="aba1" class="tab-content hidden max-w-md mx-auto">
+      <div class="glass-panel rounded-3xl p-8 border border-slate-800 shadow-2xl space-y-6">
+        <div class="text-center space-y-2">
+          <div class="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-400 mx-auto flex items-center justify-center text-xl">
+            <i class="fa-solid fa-user-lock"></i>
+          </div>
+          <h2 class="text-2xl font-black text-white">Acesse sua Conta</h2>
+          <p class="text-xs text-slate-400">Escolha seu provedor preferido para autenticar</p>
+        </div>
+
+        <div class="space-y-3 pt-2">
+          <!-- Botão Google -->
+          <button onclick="Auth.loginWithGoogle()" class="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 text-slate-100 font-semibold text-xs transition-all flex items-center justify-center gap-3 group">
+            <i class="fa-brands fa-google text-rose-500 text-base group-hover:scale-110 transition-transform"></i>
+            Entrar com Google
           </button>
 
-          <button onclick="selectPlan('pro')" class="w-full bg-gradient-to-r from-pink-500/20 to-pink-600/20 border border-pink-500/50 hover:border-pink-500 text-white font-semibold py-3 rounded-xl transition-all text-left p-4 shadow-lg shadow-pink-500/10">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="font-bold">Plano Pro</div>
-                <div class="text-xs text-pink-300">R$ 19,99/mês - Começar agora</div>
-              </div>
-              <i class="fa-solid fa-arrow-right"></i>
-            </div>
+          <!-- Botão Facebook -->
+          <button onclick="Auth.loginWithFacebook()" class="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 text-slate-100 font-semibold text-xs transition-all flex items-center justify-center gap-3 group">
+            <i class="fa-brands fa-facebook text-blue-500 text-base group-hover:scale-110 transition-transform"></i>
+            Entrar com Facebook
+          </button>
+
+          <!-- Botão Instagram -->
+          <button onclick="Auth.loginWithInstagram()" class="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 text-slate-100 font-semibold text-xs transition-all flex items-center justify-center gap-3 group">
+            <i class="fa-brands fa-instagram text-pink-500 text-base group-hover:scale-110 transition-transform"></i>
+            Entrar com Instagram
           </button>
         </div>
 
-        <button onclick="goToLoginMode('login')" class="mt-6 w-full text-slate-400 hover:text-slate-300 text-sm">
-          Voltar
-        </button>
-      </div>
-
-      <!-- Checkout Stripe -->
-      <div id="checkout-form" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
-        <button onclick="goToLoginMode('plans')" class="text-pink-400 hover:text-pink-300 mb-4 flex items-center gap-1 text-sm">
-          <i class="fa-solid fa-arrow-left"></i> Voltar
-        </button>
-
-        <h2 class="text-2xl font-bold mb-2">Confirmar Pagamento</h2>
-        <p class="text-slate-400 text-sm mb-6">R$ 19,99/mês - Seu primeiro mês</p>
-
-        <form onsubmit="processPayment(event)" class="space-y-4">
-          <div id="card-element" class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm" style="height: 55px;"></div>
-
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Nome</label>
-            <input id="card-name" type="text" required placeholder="Seu nome"
-              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-pink-500">
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1">CPF</label>
-              <input id="card-cpf" type="text" required placeholder="000.000.000-00"
-                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-pink-500">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1">Telefone</label>
-              <input id="card-phone" type="tel" required placeholder="(61) 99999-0000"
-                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-pink-500">
-            </div>
-          </div>
-
-          <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-xl transition-all">
-            Ativar Assinatura
-          </button>
-        </form>
-
-        <p class="text-xs text-slate-500 text-center mt-4">
-          Você pode cancelar a qualquer momento. Sem taxas ocultas.
+        <p class="text-[11px] text-slate-500 text-center leading-relaxed">
+          O primeiro usuário autenticado recebe a permissão <strong class="text-slate-400">ADMINISTRADOR</strong>. Os demais recebem permissão <strong class="text-slate-400">PROFISSIONAL</strong>.
         </p>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- ========================================== -->
-  <!-- APLICATIVO PRINCIPAL -->
-  <!-- ========================================== -->
-  <div id="app-page" class="hidden">
-    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 py-3">
-      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center font-bold text-slate-950">
-            <i class="fa-solid fa-scissors text-sm"></i>
+    <!-- ABA 3: AGENDA GERAL -->
+    <section id="aba3" class="tab-content hidden space-y-6">
+      <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <div class="w-10 h-10 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-store"></i>
           </div>
-          <span class="font-bold tracking-tight">HairConcept</span>
+          <div>
+            <span class="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Estabelecimento</span>
+            <span id="nome-estabelecimento" class="text-xs font-bold text-white">HairConcept - Unidade Central</span>
+          </div>
         </div>
 
-        <nav class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs md:text-sm">
-          <button onclick="switchAppTab('dashboard')" id="tab-dashboard" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-100 transition-all">
-            <i class="fa-solid fa-chart-line mr-1"></i> Dashboard
+        <div class="flex flex-wrap items-center gap-4 w-full md:w-auto justify-end">
+          <div class="bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800 text-xs text-slate-300 flex items-center gap-3">
+            <span><i class="fa-solid fa-users text-brand-400 mr-1"></i> Profissionais: <strong id="cnt-profissionais" class="text-white">0</strong></span>
+            <span class="border-l border-slate-800 pl-3"><i class="fa-solid fa-calendar-check text-brand-400 mr-1"></i> Agendamentos: <strong id="cnt-agendamentos" class="text-white">0</strong></span>
+          </div>
+
+          <button id="btn-novo-agendamento-top" onclick="UI.switchTab('aba4')" class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-md shadow-brand-500/20 transition-all flex items-center gap-2">
+            <i class="fa-solid fa-plus text-xs"></i> Novo Agendamento
           </button>
-          <button onclick="switchAppTab('agenda')" id="tab-agenda" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-100 transition-all">
-            <i class="fa-solid fa-calendar-days mr-1"></i> Agenda
-          </button>
-          <button onclick="switchAppTab('settings')" id="tab-settings" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-100 transition-all">
-            <i class="fa-solid fa-gear mr-1"></i> Configurações
-          </button>
-          <button onclick="logoutUser()" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-100 transition-all ml-2">
-            <i class="fa-solid fa-sign-out-alt mr-1"></i> Sair
-          </button>
-        </nav>
+        </div>
       </div>
-    </header>
 
-    <main class="max-w-7xl mx-auto p-4 md:p-6">
-      <!-- DASHBOARD -->
-      <section id="dashboard" class="tab-content space-y-6">
-        <div class="grid md:grid-cols-3 gap-6">
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-slate-400 text-sm font-medium">Status da Assinatura</h3>
-              <i class="fa-solid fa-check-circle text-emerald-500 text-xl"></i>
-            </div>
-            <p id="subscription-status" class="text-2xl font-bold">Plano Gratuito</p>
-            <p id="subscription-date" class="text-xs text-slate-400 mt-1">Válido até: --</p>
+      <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left border-collapse min-w-[800px]">
+            <thead>
+              <tr id="grid-header-row" class="bg-slate-900/80 border-b border-slate-800 text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
+                <th class="py-3 px-4 w-24 sticky-time-col">Horário</th>
+              </tr>
+            </thead>
+            <tbody id="grid-horarios-body" class="divide-y divide-slate-800/60 text-xs"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABA 4: NOVO AGENDAMENTO -->
+    <section id="aba4" class="tab-content hidden max-w-2xl mx-auto space-y-6">
+      <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-2xl space-y-6">
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-calendar-plus text-brand-500"></i> Registrar Novo Agendamento
+        </h2>
+        <form id="form-cadastro-agendamento" onsubmit="App.handleCreateAgendamento(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Profissional Responsável *</label>
+            <select id="agendamento-profissional" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+            </select>
           </div>
-
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-slate-400 text-sm font-medium">Total de Agendamentos</h3>
-              <i class="fa-solid fa-calendar text-pink-500 text-xl"></i>
-            </div>
-            <p id="total-bookings" class="text-2xl font-bold">0</p>
-            <p class="text-xs text-slate-400 mt-1">Este mês</p>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Horário *</label>
+            <select id="agendamento-horario" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+              <option value="08:00">08:00</option>
+              <option value="09:00">09:00</option>
+              <option value="10:00">10:00</option>
+              <option value="11:00">11:00</option>
+              <option value="13:00">13:00</option>
+              <option value="14:00">14:00</option>
+              <option value="15:00">15:00</option>
+              <option value="16:00">16:00</option>
+              <option value="17:00">17:00</option>
+              <option value="18:00">18:00</option>
+            </select>
           </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Nome do Cliente *</label>
+            <input id="cliente-nome" type="text" placeholder="Ex: Maria Oliveira" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Descrição do Serviço *</label>
+            <input id="cliente-servico" type="text" placeholder="Ex: Corte e Escova" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+          </div>
+          <button type="submit" class="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-lg shadow-brand-500/25 transition-all">
+            Confirmar e Salvar na Agenda
+          </button>
+        </form>
+      </div>
+    </section>
 
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-slate-400 text-sm font-medium">Receita (Estimada)</h3>
-              <i class="fa-solid fa-dollar text-purple-500 text-xl"></i>
+    <!-- ABA 5: GESTÃO DE PROFISSIONAIS (EXCLUSIVA ADMIN) -->
+    <section id="aba5" class="tab-content hidden max-w-4xl mx-auto space-y-6">
+      <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-2xl space-y-6">
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-users-gear text-brand-500"></i> Gerenciamento de Profissionais
+        </h2>
+        
+        <form id="form-cadastro-profissional" onsubmit="App.handleCreateProfissional(event)" class="flex flex-col sm:flex-row gap-3">
+          <input id="profissional-nome" type="text" placeholder="Nome do Profissional (Ex: Carlos Silva)" required class="flex-grow bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+          <input id="profissional-especialidade" type="text" placeholder="Especialidade (Ex: Colorista)" required class="flex-grow bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-lg shadow-brand-500/25 transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus"></i> Cadastrar
+          </button>
+        </form>
+
+        <div class="border-t border-slate-800 pt-6">
+          <h3 class="text-sm font-semibold text-slate-300 mb-4">Equipe Cadastrada</h3>
+          <div id="lista-profissionais-gestao" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABA 6: DASHBOARD / MEU PERFIL -->
+    <section id="aba6" class="tab-content hidden max-w-2xl mx-auto space-y-6">
+      <div class="glass-panel rounded-3xl p-8 border border-slate-800 shadow-2xl space-y-6">
+        <div class="flex items-center gap-4 border-b border-slate-800 pb-6">
+          <img id="dashboard-user-photo" src="https://via.placeholder.com/80" alt="Foto Perfil" class="w-20 h-20 rounded-2xl object-cover border-2 border-brand-500 shadow-lg">
+          <div>
+            <h2 id="dashboard-user-name" class="text-2xl font-black text-white">Nome do Usuário</h2>
+            <p id="dashboard-user-email" class="text-xs text-slate-400">email@dominio.com</p>
+            <div class="mt-2 inline-flex items-center gap-2">
+              <span id="dashboard-user-role" class="text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg bg-brand-500/10 text-brand-400 border border-brand-500/20">ADMIN</span>
+              <span id="dashboard-user-provider" class="text-[10px] font-medium px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">Google</span>
             </div>
-            <p id="total-revenue" class="text-2xl font-bold">R$ 0,00</p>
-            <p class="text-xs text-slate-400 mt-1">Este mês</p>
           </div>
         </div>
 
-        <div class="bg-gradient-to-r from-pink-600/20 to-purple-600/10 border border-pink-500/30 rounded-2xl p-8 text-center">
-          <h3 class="text-2xl font-bold mb-2">Upgrade para Pro</h3>
-          <p class="text-slate-300 mb-4">Acesso ilimitado por apenas R$ 19,99/mês</p>
-          <button onclick="goToLoginMode('checkout')" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-8 py-3 rounded-lg transition-all shadow-lg shadow-pink-500/20">
-            Começar Agora
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
+            <span class="text-[10px] font-medium text-slate-400 block uppercase">ID do Usuário (UID)</span>
+            <span id="dashboard-user-uid" class="text-xs font-mono text-slate-200 block truncate mt-1">-</span>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
+            <span class="text-[10px] font-medium text-slate-400 block uppercase">Data de Cadastro</span>
+            <span id="dashboard-user-created" class="text-xs font-medium text-slate-200 block mt-1">-</span>
+          </div>
+        </div>
+
+        <div class="pt-4">
+          <button onclick="Auth.logout()" class="w-full py-3 rounded-xl bg-slate-900 border border-slate-800 hover:bg-rose-950/40 hover:border-rose-800/60 text-rose-400 font-semibold text-xs transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-right-from-bracket"></i> Encerrar Sessão
           </button>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- AGENDA -->
-      <section id="agenda" class="tab-content hidden space-y-6">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-xl p-1">
-              <button class="p-2 hover:bg-slate-800 rounded-lg text-slate-400">
-                <i class="fa-solid fa-chevron-left text-xs"></i>
-              </button>
-              <span id="agenda-date" class="text-xs font-semibold px-3 text-slate-200">Hoje</span>
-              <button class="p-2 hover:bg-slate-800 rounded-lg text-slate-400">
-                <i class="fa-solid fa-chevron-right text-xs"></i>
-              </button>
-            </div>
-          </div>
-          <button onclick="switchAppTab('dashboard')" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-4 py-2 rounded-lg text-xs">
-            <i class="fa-solid fa-plus mr-1"></i> Novo Agendamento
-          </button>
-        </div>
+  </main>
 
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-          <div class="text-center text-slate-400 py-12">
-            <i class="fa-solid fa-calendar-check text-4xl mb-3 opacity-30"></i>
-            <p>Nenhum agendamento para hoje</p>
-          </div>
-        </div>
-      </section>
+  <!-- FIREBASE SDK V10 (ES MODULES) E ARQUITETURA JS DA APLICAÇÃO -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getAuth, 
+      GoogleAuthProvider, 
+      FacebookAuthProvider, 
+      signInWithPopup, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-      <!-- CONFIGURAÇÕES -->
-      <section id="settings" class="tab-content hidden space-y-6 max-w-2xl">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-          <h3 class="text-lg font-bold mb-6">Configurações da Conta</h3>
-          
-          <div class="space-y-4">
-            <div>
-              <label class="block text-xs font-medium text-slate-300 mb-2">Nome do Salão</label>
-              <p id="salon-name-display" class="text-slate-100">--</p>
-            </div>
+    /* ==========================================================================
+       CONFIGURAÇÃO DO FIREBASE (INSIRA SUAS CREDENCIAIS AQUI)
+       ========================================================================== */
+    const firebaseConfig = {
+      apiKey: "AIzaSyYOUR_API_KEY_HERE",
+      authDomain: "seu-projeto.firebaseapp.com",
+      projectId: "seu-projeto",
+      storageBucket: "seu-projeto.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:abcdef123456"
+    };
 
-            <div>
-              <label class="block text-xs font-medium text-slate-300 mb-2">E-mail</label>
-              <p id="email-display" class="text-slate-100">--</p>
-            </div>
+    // Inicialização Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-            <div>
-              <label class="block text-xs font-medium text-slate-300 mb-2">Plano Atual</label>
-              <p id="plan-display" class="text-slate-100">Gratuito</p>
-            </div>
+    const googleProvider = new GoogleAuthProvider();
+    const facebookProvider = new FacebookAuthProvider();
 
-            <button onclick="logoutUser()" class="w-full bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 font-semibold py-2 rounded-lg transition-all mt-6">
-              Sair da Conta
-            </button>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <!-- ========================================== -->
-  <!-- JAVASCRIPT -->
-  <!-- ========================================== -->
-  <script>
-    // Variables loaded from /api/config
-    let firebaseConfig = {};
-    let stripePublishableKey = '';
-    let currentUser = null;
-    let currentPlan = 'free';
-
-    // Load configuration from API on startup
-    async function loadConfig() {
-      try {
-        const response = await fetch('/api/config');
-        const config = await response.json();
-        
-        firebaseConfig = config.firebase;
-        stripePublishableKey = config.stripe.publishableKey;
-        
-        // Log if config is loaded (but don't expose secrets)
-        console.log('✅ Configuration loaded from API');
-        
-        // Initialize Firebase if config is available
-        if (firebaseConfig.projectId) {
-          if (typeof firebase !== 'undefined') {
-            firebase.initializeApp(firebaseConfig);
-            console.log('✅ Firebase initialized');
-          }
+    /* ==========================================================================
+       MÓDULO: STORAGE (Persistência no LocalStorage)
+       ========================================================================== */
+    const Storage = {
+      KEYS: {
+        USUARIOS: 'hairconcept_usuarios',
+        PROFISSIONAIS: 'hairconcept_profissionais',
+        AGENDAMENTOS: 'hairconcept_agendamentos'
+      },
+      get(key, defaultValue = null) {
+        try {
+          const data = localStorage.getItem(key);
+          return data ? JSON.parse(data) : defaultValue;
+        } catch (e) {
+          console.error(`Erro ao ler ${key} do Storage:`, e);
+          return defaultValue;
         }
-      } catch (error) {
-        console.warn('⚠️ Could not load config from API:', error);
-        console.log('Using demo/fallback mode');
+      },
+      set(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+          console.error(`Erro ao salvar ${key} no Storage:`, e);
+        }
       }
-    }
+    };
 
-    // Load config when page loads
-    document.addEventListener('DOMContentLoaded', loadConfig);
+    /* ==========================================================================
+       MÓDULO: AUTH (Autenticação Firebase & Regras de Acesso)
+       ========================================================================== */
+    window.Auth = {
+      currentUser: null,
+      currentUserProfile: null,
 
-    // ========================================== //
-    // NAVIGATION FUNCTIONS
-    // ========================================== //
-    function showLoading(text = 'Carregando...') {
-      document.getElementById('loading-modal').classList.remove('hidden');
-      document.getElementById('loading-text').textContent = text;
-    }
+      init() {
+        // Validação e recuperação de sessão persistente via Firebase
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            this.currentUser = user;
+            this.currentUserProfile = this.syncUserData(user);
+            UI.renderState();
+            UI.updateDashboard();
+          } else {
+            this.currentUser = null;
+            this.currentUserProfile = null;
+            UI.renderState();
+          }
+        });
+      },
 
-    function hideLoading() {
-      document.getElementById('loading-modal').classList.add('hidden');
-    }
+      // Garante criação do registro estruturado do usuário e definição do papel (ADMIN / PROFISSIONAL)
+      syncUserData(firebaseUser, customProvider = null) {
+        const usuarios = Storage.get(Storage.KEYS.USUARIOS, []);
+        let usuarioExistente = usuarios.find(u => u.uid === firebaseUser.uid);
 
-    function showLanding() {
-      document.getElementById('landing-page').classList.remove('hidden');
-      document.getElementById('auth-page').classList.add('hidden');
-      document.getElementById('app-page').classList.add('hidden');
-    }
+        if (!usuarioExistente) {
+          // Lógica de Permissões: Primeiro usuário cadastrado ganha permissão ADMIN
+          const role = usuarios.length === 0 ? 'ADMIN' : 'PROFISSIONAL';
+          
+          let providerName = 'google';
+          if (customProvider) {
+            providerName = customProvider;
+          } else if (firebaseUser.providerData && firebaseUser.providerData[0]) {
+            providerName = firebaseUser.providerData[0].providerId.replace('.com', '');
+          }
 
-    function showAuth() {
-      document.getElementById('landing-page').classList.add('hidden');
-      document.getElementById('auth-page').classList.remove('hidden');
-      document.getElementById('app-page').classList.add('hidden');
-    }
+          usuarioExistente = {
+            uid: firebaseUser.uid,
+            nome: firebaseUser.displayName || 'Usuário Sem Nome',
+            email: firebaseUser.email || 'email@não.informado',
+            foto: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(firebaseUser.displayName || 'U')}&background=ec4899&color=fff`,
+            provider: providerName,
+            role: role,
+            criadoEm: new Date().toISOString()
+          };
 
-    function showApp() {
-      document.getElementById('landing-page').classList.add('hidden');
-      document.getElementById('auth-page').classList.add('hidden');
-      document.getElementById('app-page').classList.remove('hidden');
-    }
+          usuarios.push(usuarioExistente);
+          Storage.set(Storage.KEYS.USUARIOS, usuarios);
+        }
 
-    function goToLoginMode(mode) {
-      document.getElementById('login-form').classList.toggle('hidden', mode !== 'login');
-      document.getElementById('signup-form').classList.toggle('hidden', mode !== 'signup');
-      document.getElementById('plans-form').classList.toggle('hidden', mode !== 'plans');
-      document.getElementById('checkout-form').classList.toggle('hidden', mode !== 'checkout');
-      
-      if (['login', 'signup', 'plans', 'checkout'].includes(mode)) {
-        showAuth();
+        return usuarioExistente;
+      },
+
+      async loginWithGoogle() {
+        try {
+          const result = await signInWithPopup(auth, googleProvider);
+          this.syncUserData(result.user, 'google');
+          UI.toast("Autenticado via Google com sucesso!");
+          UI.switchTab('aba3');
+        } catch (error) {
+          console.error("Erro no login Google:", error);
+          UI.toast("Erro ao conectar com Google. Verifique o console ou a chave do Firebase.", "error");
+        }
+      },
+
+      async loginWithFacebook() {
+        try {
+          const result = await signInWithPopup(auth, facebookProvider);
+          this.syncUserData(result.user, 'facebook');
+          UI.toast("Autenticado via Facebook com sucesso!");
+          UI.switchTab('aba3');
+        } catch (error) {
+          console.error("Erro no login Facebook:", error);
+          UI.toast("Erro ao conectar com Facebook.", "error");
+        }
+      },
+
+      // Integração Instagram OAuth simulada e preparada para Meta Platform API
+      loginWithInstagram() {
+        UI.toast("Redirecionando para autenticação do Instagram...", "info");
+        
+        /* 
+          ARQUITETURA DE INTEGRAÇÃO INSTAGRAM OAUTH (META PLATFORM):
+          1. Cadastrar app no Meta for Developers
+          2. Redirecionar para: https://api.instagram.com/oauth/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope=user_profile&response_type=code
+          3. Trocar o 'code' retornado pelo Access Token no backend/Cloud Function
+          4. Autenticar no Firebase com Custom Token (signInWithCustomToken)
+        */
+
+        setTimeout(() => {
+          // Simulação de retorno da API OAuth para demonstração no front-end
+          const mockInstagramUser = {
+            uid: 'insta_' + Date.now(),
+            displayName: 'Usuário Instagram',
+            email: 'instagram.user@meta.com',
+            photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
+          };
+          
+          this.currentUser = mockInstagramUser;
+          this.currentUserProfile = this.syncUserData(mockInstagramUser, 'instagram');
+          UI.renderState();
+          UI.updateDashboard();
+          UI.toast("Autenticado via Instagram OAuth!");
+          UI.switchTab('aba3');
+        }, 1200);
+      },
+
+      async logout() {
+        try {
+          await signOut(auth);
+          this.currentUser = null;
+          this.currentUserProfile = null;
+          UI.toast("Sessão encerrada com sucesso.", "info");
+          UI.renderState();
+          UI.switchTab('aba0');
+        } catch (error) {
+          console.error("Erro no logout:", error);
+          UI.toast("Erro ao encerrar sessão.", "error");
+        }
+      },
+
+      isAuthenticated() {
+        return !!this.currentUserProfile;
+      },
+
+      isAdmin() {
+        return this.isAuthenticated() && this.currentUserProfile.role === 'ADMIN';
       }
-    }
+    };
 
-    // ========================================== //
-    // AUTH FUNCTIONS (Mock - Sem Firebase Real)
-    // ========================================== //
-    async function loginWithEmail(event) {
-      event.preventDefault();
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
+    /* ==========================================================================
+       MÓDULO: PROFISSIONAIS
+       ========================================================================== */
+    window.Profissionais = {
+      getAll() {
+        return Storage.get(Storage.KEYS.PROFISSIONAIS, []);
+      },
 
-      if (!email || !password) {
-        alert('Por favor, preencha todos os campos');
-        return;
+      add(nome, especialidade) {
+        if (!Auth.isAdmin()) {
+          throw new Error("Apenas administradores podem cadastrar profissionais.");
+        }
+
+        const nomeTrim = nome ? nome.trim() : "";
+        const especTrim = especialidade ? especialidade.trim() : "";
+
+        if (!nomeTrim || !especTrim) {
+          throw new Error("Nome e especialidade são obrigatórios.");
+        }
+
+        const lista = this.getAll();
+        const duplicado = lista.some(p => p.nome.toLowerCase() === nomeTrim.toLowerCase());
+        
+        if (duplicado) {
+          throw new Error("Já existe um profissional cadastrado com este nome.");
+        }
+
+        const novoProfissional = {
+          id: 'prof_' + Date.now(),
+          nome: nomeTrim,
+          especialidade: especTrim,
+          criadoEm: new Date().toISOString()
+        };
+
+        lista.push(novoProfissional);
+        Storage.set(Storage.KEYS.PROFISSIONAIS, lista);
+        return novoProfissional;
+      },
+
+      remove(id) {
+        if (!Auth.isAdmin()) {
+          throw new Error("Apenas administradores podem remover profissionais.");
+        }
+
+        let lista = this.getAll();
+        lista = lista.filter(p => p.id !== id);
+        Storage.set(Storage.KEYS.PROFISSIONAIS, lista);
+        Agenda.removeByProfissional(id);
       }
+    };
 
-      showLoading('Entrando...');
-      setTimeout(() => {
-        hideLoading();
-        currentUser = { email, salonName: 'Meu Salão' };
-        updateDashboard();
-        showApp();
-      }, 1000);
-    }
+    /* ==========================================================================
+       MÓDULO: AGENDA
+       ========================================================================== */
+    window.Agenda = {
+      HORARIOS: ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'],
 
-    async function signupWithEmail(event) {
-      event.preventDefault();
-      const salonName = document.getElementById('signup-salon-name').value;
-      const email = document.getElementById('signup-email').value;
-      const password = document.getElementById('signup-password').value;
+      getAll() {
+        return Storage.get(Storage.KEYS.AGENDAMENTOS, []);
+      },
 
-      if (!salonName || !email || !password) {
-        alert('Por favor, preencha todos os campos');
-        return;
+      add(profissionalId, horario, cliente, servico) {
+        if (!Auth.isAdmin()) {
+          throw new Error("Apenas administradores podem criar agendamentos.");
+        }
+
+        const clienteTrim = cliente ? cliente.trim() : "";
+        const servicoTrim = servico ? servico.trim() : "";
+
+        if (!profissionalId || !horario || !clienteTrim || !servicoTrim) {
+          throw new Error("Todos os campos do agendamento são obrigatórios.");
+        }
+
+        const lista = this.getAll();
+        const conflito = lista.some(a => a.profissionalId === profissionalId && a.horario === horario);
+
+        if (conflito) {
+          throw new Error("Este profissional já possui um agendamento neste horário.");
+        }
+
+        const novoAgendamento = {
+          id: 'agend_' + Date.now(),
+          profissionalId: profissionalId,
+          cliente: clienteTrim,
+          servico: servicoTrim,
+          horario: horario,
+          criadoEm: new Date().toISOString()
+        };
+
+        lista.push(novoAgendamento);
+        Storage.set(Storage.KEYS.AGENDAMENTOS, lista);
+        return novoAgendamento;
+      },
+
+      remove(id) {
+        if (!Auth.isAdmin()) {
+          throw new Error("Apenas administradores podem excluir agendamentos.");
+        }
+
+        let lista = this.getAll();
+        lista = lista.filter(a => a.id !== id);
+        Storage.set(Storage.KEYS.AGENDAMENTOS, lista);
+      },
+
+      removeByProfissional(profissionalId) {
+        let lista = this.getAll();
+        lista = lista.filter(a => a.profissionalId !== profissionalId);
+        Storage.set(Storage.KEYS.AGENDAMENTOS, lista);
       }
+    };
 
-      showLoading('Criando conta...');
-      setTimeout(() => {
-        hideLoading();
-        currentUser = { email, salonName };
-        currentPlan = 'free';
-        goToLoginMode('plans');
-      }, 1000);
-    }
+    /* ==========================================================================
+       MÓDULO: UI (Interface de Usuário & Componentes)
+       ========================================================================== */
+    window.UI = {
+      PROTECTED_TABS: ['aba3', 'aba4', 'aba5', 'aba6'],
+      ADMIN_ONLY_TABS: ['aba5'],
 
-    function selectPlan(plan) {
-      currentPlan = plan;
-      if (plan === 'pro') {
-        goToLoginMode('checkout');
-      } else {
-        // Plano gratuito
-        updateDashboard();
-        showApp();
+      toast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        const bgClass = type === 'error' ? 'bg-rose-950 border-rose-500 text-rose-200' :
+                        type === 'info' ? 'bg-slate-900 border-brand-500 text-slate-200' :
+                        'bg-emerald-950 border-emerald-500 text-emerald-200';
+
+        const iconClass = type === 'error' ? 'fa-circle-exclamation text-rose-400' :
+                          type === 'info' ? 'fa-circle-info text-brand-400' :
+                          'fa-circle-check text-emerald-400';
+
+        toast.className = `pointer-events-auto flex items-center gap-3 p-4 rounded-xl border shadow-2xl ${bgClass} transition-all duration-300 transform translate-y-2 opacity-0`;
+        toast.innerHTML = `<i class="fa-solid ${iconClass} text-base"></i><span class="text-xs font-medium">${message}</span>`;
+
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => {
+          toast.classList.remove('translate-y-2', 'opacity-0');
+        });
+
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-2');
+          setTimeout(() => toast.remove(), 300);
+        }, 3500);
+      },
+
+      toggleUserDropdown() {
+        const menu = document.getElementById('user-dropdown-menu');
+        if (menu) menu.classList.toggle('hidden');
+      },
+
+      switchTab(tabId) {
+        // Validação de segurança de acesso
+        if (this.PROTECTED_TABS.includes(tabId) && !Auth.isAuthenticated()) {
+          this.toast("Acesso restrito. Autentique-se para acessar.", "error");
+          this.switchTab('aba1');
+          return;
+        }
+
+        if (this.ADMIN_ONLY_TABS.includes(tabId) && !Auth.isAdmin()) {
+          this.toast("Acesso negado. Exclusivo para Administradores.", "error");
+          return;
+        }
+
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.classList.remove('bg-brand-500', 'text-white');
+          btn.classList.add('text-slate-300');
+        });
+
+        const target = document.getElementById(tabId);
+        if (target) target.classList.remove('hidden');
+
+        const btn = document.getElementById(`btn-${tabId}`);
+        if (btn) {
+          btn.classList.add('bg-brand-500', 'text-white');
+          btn.classList.remove('text-slate-300');
+        }
+
+        // Esconde menu dropdown do usuário ao trocar de aba
+        const dropdown = document.getElementById('user-dropdown-menu');
+        if (dropdown) dropdown.classList.add('hidden');
+
+        if (tabId === 'aba3') this.renderGridAgenda();
+        if (tabId === 'aba4') this.renderFormAgendamentoOptions();
+        if (tabId === 'aba5') this.renderProfissionaisGestao();
+        if (tabId === 'aba6') this.updateDashboard();
+      },
+
+      renderState() {
+        const isAuth = Auth.isAuthenticated();
+        const user = Auth.currentUserProfile;
+
+        const roleLabel = document.getElementById('user-role-label');
+        const btnLogin = document.getElementById('btn-login-header');
+        const userDropdownContainer = document.getElementById('user-dropdown-container');
+
+        const btnNovoAgendamentoTop = document.getElementById('btn-novo-agendamento-top');
+        const btnAba5 = document.getElementById('btn-aba5');
+
+        if (roleLabel) {
+          roleLabel.textContent = isAuth ? (Auth.isAdmin() ? 'Administrador' : 'Profissional') : 'Visitante';
+        }
+
+        if (isAuth && user) {
+          if (btnLogin) btnLogin.classList.add('hidden');
+          if (userDropdownContainer) userDropdownContainer.classList.remove('hidden');
+
+          document.getElementById('user-avatar-header').src = user.foto;
+          document.getElementById('user-name-header').textContent = user.nome.split(' ')[0];
+          document.getElementById('user-dropdown-name').textContent = user.nome;
+          document.getElementById('user-dropdown-email').textContent = user.email;
+          document.getElementById('user-dropdown-role').textContent = user.role;
+        } else {
+          if (btnLogin) btnLogin.classList.remove('hidden');
+          if (userDropdownContainer) userDropdownContainer.classList.add('hidden');
+        }
+
+        if (btnNovoAgendamentoTop) btnNovoAgendamentoTop.classList.toggle('hidden', !Auth.isAdmin());
+        if (btnAba5) btnAba5.classList.toggle('hidden', !Auth.isAdmin());
+      },
+
+      updateDashboard() {
+        const user = Auth.currentUserProfile;
+        if (!user) return;
+
+        document.getElementById('dashboard-user-photo').src = user.foto;
+        document.getElementById('dashboard-user-name').textContent = user.nome;
+        document.getElementById('dashboard-user-email').textContent = user.email;
+        document.getElementById('dashboard-user-role').textContent = user.role;
+        document.getElementById('dashboard-user-provider').textContent = user.provider.toUpperCase();
+        document.getElementById('dashboard-user-uid').textContent = user.uid;
+        document.getElementById('dashboard-user-created').textContent = new Date(user.criadoEm).toLocaleString('pt-BR');
+      },
+
+      updateCounters() {
+        const profs = Profissionais.getAll();
+        const agends = Agenda.getAll();
+
+        const cntProf = document.getElementById('cnt-profissionais');
+        const cntAgend = document.getElementById('cnt-agendamentos');
+
+        if (cntProf) cntProf.textContent = profs.length;
+        if (cntAgend) cntAgend.textContent = agends.length;
+      },
+
+      renderGridAgenda() {
+        this.updateCounters();
+        const headerRow = document.getElementById('grid-header-row');
+        const tbody = document.getElementById('grid-horarios-body');
+        if (!tbody || !headerRow) return;
+
+        const profs = Profissionais.getAll();
+        const agends = Agenda.getAll();
+
+        headerRow.innerHTML = '<th class="py-3 px-4 w-24 sticky-time-col">Horário</th>';
+        tbody.innerHTML = '';
+
+        if (profs.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td colspan="100%" class="py-12 text-center text-slate-500 text-xs">
+              <i class="fa-solid fa-users-slash text-2xl mb-2 block text-slate-600"></i>
+              Nenhum profissional cadastrado no momento.
+              ${Auth.isAdmin() ? '<br><button onclick="UI.switchTab(\'aba5\')" class="mt-3 text-brand-400 font-semibold hover:underline">Clique aqui para cadastrar</button>' : ''}
+            </td>
+          `;
+          tbody.appendChild(tr);
+          return;
+        }
+
+        profs.forEach(p => {
+          const th = document.createElement('th');
+          th.className = 'py-3 px-4 min-w-[180px] border-l border-slate-800/80';
+          th.innerHTML = `
+            <div class="font-bold text-slate-200 text-xs">${p.nome}</div>
+            <div class="text-[10px] text-brand-400 font-normal lowercase">${p.especialidade}</div>
+          `;
+          headerRow.appendChild(th);
+        });
+
+        Agenda.HORARIOS.forEach(hora => {
+          const tr = document.createElement('tr');
+          let rowHTML = `<td class="py-3 px-4 font-mono font-semibold text-slate-400 sticky-time-col">${hora}</td>`;
+
+          profs.forEach(p => {
+            const agendamento = agends.find(a => a.profissionalId === p.id && a.horario === hora);
+            
+            if (agendamento) {
+              rowHTML += `
+                <td class="py-2 px-3 border-l border-slate-800/60">
+                  <div class="bg-slate-800/90 border-l-4 border-brand-500 p-2 rounded-r-xl flex items-center justify-between group">
+                    <div class="overflow-hidden">
+                      <span class="font-bold text-slate-100 block truncate">${agendamento.cliente}</span>
+                      <span class="text-[10px] text-brand-400 block truncate">
+                        <i class="fa-solid fa-scissors text-[9px] mr-1"></i>${agendamento.servico}
+                      </span>
+                    </div>
+                    ${Auth.isAdmin() ? `
+                      <button onclick="App.handleDeleteAgendamento('${agendamento.id}')" title="Excluir Agendamento" class="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 transition-all p-1">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                      </button>
+                    ` : ''}
+                  </div>
+                </td>
+              `;
+            } else {
+              rowHTML += `<td class="py-3 px-4 border-l border-slate-800/40 text-slate-700 text-[10px] select-none">Disponível</td>`;
+            }
+          });
+
+          tr.innerHTML = rowHTML;
+          tbody.appendChild(tr);
+        });
+      },
+
+      renderFormAgendamentoOptions() {
+        const select = document.getElementById('agendamento-profissional');
+        if (!select) return;
+
+        select.innerHTML = '';
+        const profs = Profissionais.getAll();
+
+        if (profs.length === 0) {
+          select.innerHTML = '<option value="">Nenhum profissional disponível</option>';
+          select.disabled = true;
+          return;
+        }
+
+        select.disabled = false;
+        profs.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = `${p.nome} (${p.especialidade})`;
+          select.appendChild(opt);
+        });
+      },
+
+      renderProfissionaisGestao() {
+        const container = document.getElementById('lista-profissionais-gestao');
+        if (!container) return;
+
+        container.innerHTML = '';
+        const profs = Profissionais.getAll();
+
+        if (profs.length === 0) {
+          container.innerHTML = '<p class="text-xs text-slate-500 col-span-full">Nenhum profissional cadastrado.</p>';
+          return;
+        }
+
+        profs.forEach(p => {
+          const card = document.createElement('div');
+          card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between';
+          card.innerHTML = `
+            <div>
+              <h4 class="text-xs font-bold text-white">${p.nome}</h4>
+              <p class="text-[10px] text-brand-400">${p.especialidade}</p>
+            </div>
+            <button onclick="App.handleDeleteProfissional('${p.id}')" class="p-2 text-slate-500 hover:text-rose-400 transition-colors">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          `;
+          container.appendChild(card);
+        });
       }
-    }
+    };
 
-    async function processPayment(event) {
-      event.preventDefault();
-      showLoading('Processando pagamento...');
-      
-      setTimeout(() => {
-        hideLoading();
-        currentPlan = 'pro';
-        alert('✅ Pagamento realizado com sucesso! Bem-vindo ao Plano Pro.');
-        updateDashboard();
-        showApp();
-      }, 2000);
-    }
+    /* ==========================================================================
+       MÓDULO: APP (Controlador e Handlers de Formulários)
+       ========================================================================== */
+    window.App = {
+      init() {
+        Auth.init();
+        UI.switchTab('aba0');
 
-    function logoutUser() {
-      if (confirm('Deseja sair da sua conta?')) {
-        currentUser = null;
-        currentPlan = 'free';
-        showLanding();
+        // Fecha dropdown ao clicar fora
+        document.addEventListener('click', (e) => {
+          const dropdown = document.getElementById('user-dropdown-container');
+          if (dropdown && !dropdown.contains(e.target)) {
+            document.getElementById('user-dropdown-menu').classList.add('hidden');
+          }
+        });
+      },
+
+      handleCreateProfissional(e) {
+        e.preventDefault();
+        try {
+          const nomeInput = document.getElementById('profissional-nome');
+          const especInput = document.getElementById('profissional-especialidade');
+
+          Profissionais.add(nomeInput.value, especInput.value);
+          
+          nomeInput.value = '';
+          especInput.value = '';
+
+          UI.toast("Profissional cadastrado com sucesso!");
+          UI.renderProfissionaisGestao();
+          UI.updateCounters();
+        } catch (err) {
+          UI.toast(err.message, "error");
+        }
+      },
+
+      handleDeleteProfissional(id) {
+        if (!confirm("Tem certeza que deseja excluir este profissional? Todos os agendamentos associados serão removidos.")) {
+          return;
+        }
+
+        try {
+          Profissionais.remove(id);
+          UI.toast("Profissional removido.", "info");
+          UI.renderProfissionaisGestao();
+          UI.updateCounters();
+        } catch (err) {
+          UI.toast(err.message, "error");
+        }
+      },
+
+      handleCreateAgendamento(e) {
+        e.preventDefault();
+        try {
+          const profId = document.getElementById('agendamento-profissional').value;
+          const hora = document.getElementById('agendamento-horario').value;
+          const cliente = document.getElementById('cliente-nome').value;
+          const servico = document.getElementById('cliente-servico').value;
+
+          Agenda.add(profId, hora, cliente, servico);
+
+          document.getElementById('cliente-nome').value = '';
+          document.getElementById('cliente-servico').value = '';
+
+          UI.toast("Agendamento cadastrado com sucesso!");
+          UI.switchTab('aba3');
+        } catch (err) {
+          UI.toast(err.message, "error");
+        }
+      },
+
+      handleDeleteAgendamento(id) {
+        if (!confirm("Tem certeza que deseja cancelar este agendamento?")) {
+          return;
+        }
+
+        try {
+          Agenda.remove(id);
+          UI.toast("Agendamento removido.", "info");
+          UI.renderGridAgenda();
+        } catch (err) {
+          UI.toast(err.message, "error");
+        }
       }
-    }
+    };
 
-    // ========================================== //
-    // APP FUNCTIONS
-    // ========================================== //
-    function switchAppTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-pink-500', 'text-white');
-        btn.classList.add('text-slate-400');
-      });
-
-      const tab = document.getElementById(tabId);
-      if (tab) tab.classList.remove('hidden');
-
-      const btn = document.getElementById(`tab-${tabId}`);
-      if (btn) {
-        btn.classList.add('bg-pink-500', 'text-white');
-        btn.classList.remove('text-slate-400');
-      }
-    }
-
-    function updateDashboard() {
-      // Atualizar informações do usuário
-      if (currentUser) {
-        document.getElementById('salon-name-display').textContent = currentUser.salonName;
-        document.getElementById('email-display').textContent = currentUser.email;
-      }
-
-      const planName = currentPlan === 'pro' ? 'Plano Pro - R$ 19,99/mês' : 'Plano Gratuito';
-      document.getElementById('subscription-status').textContent = planName;
-      document.getElementById('plan-display').textContent = planName;
-
-      const today = new Date().toLocaleDateString('pt-BR');
-      document.getElementById('agenda-date').textContent = today;
-    }
-
-    // ========================================== //
-    // INICIALIZAÇÃO
-    // ========================================== //
-    document.addEventListener('DOMContentLoaded', () => {
-      showLanding();
-    });
+    // Inicialização da Aplicação
+    document.addEventListener('DOMContentLoaded', () => App.init());
   </script>
 </body>
 </html>
