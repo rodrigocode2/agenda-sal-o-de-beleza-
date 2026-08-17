@@ -1,10 +1,31 @@
-// api/config.js - Retorna as variáveis de ambiente para o frontend
-// Isso é uma função serverless do Vercel que expõe as variáveis de forma segura
+// api/config.js - Serverless function que expõe apenas variáveis públicas para o frontend
+// Segurança: retorna apenas chaves publicáveis e aplica CORS restrito usando FRONTEND_URL
 
 export default function handler(req, res) {
-  // Retornar apenas as variáveis públicas (que podem estar no cliente)
-  // As chaves secretas são mantidas seguras no servidor
-  
+  const allowedOrigin = process.env.FRONTEND_URL || '';
+
+  // CORS básico e preflight
+  if (allowedOrigin) {
+    // Se a requisição vier com Origin, compare e set header apenas se corresponder
+    const origin = req.headers.origin;
+    if (origin && origin === allowedOrigin) {
+      res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    }
+  } else {
+    // Fallback: não permitir origem wildcard em produção — permite requisições sem Origin (ex.: from server)
+    // Para desenvolvimento rápido, se FRONTEND_URL não estiver definido, permitimos todas as origens.
+    // ATENÇÃO: remova esse fallback em produção e defina FRONTEND_URL nas envs do Vercel.
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  // Somente chaves públicas — nunca exponha segredos do servidor aqui
   const config = {
     firebase: {
       apiKey: process.env.FIREBASE_API_KEY || '',
@@ -19,9 +40,6 @@ export default function handler(req, res) {
     }
   };
 
-  // Permitir CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/json');
-  
-  res.status(200).json(config);
+  return res.status(200).json(config);
 }
