@@ -1,41 +1,51 @@
 -- migrations/002_seeds.sql
--- Seed data: employees, services, example customer
 
--- Employees
-INSERT INTO employees (name) VALUES
-('Ana'),
-('Bruno'),
-('Carla');
+-- Seed data (plain SQL) for employees, services and example customer/appointment
+-- This file is safe to run directly with the mysql CLI
 
--- Services
-INSERT INTO services (name, duration_minutes, price) VALUES
-('Corte Feminino', 45, 80.00),
-('Corte Masculino', 30, 45.00),
-('Escova', 60, 70.00),
-('Hidratação', 50, 120.00);
+INSERT INTO employees (name)
+SELECT 'Ana' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM employees WHERE name = 'Ana') LIMIT 1;
+INSERT INTO employees (name)
+SELECT 'Bruno' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM employees WHERE name = 'Bruno') LIMIT 1;
+INSERT INTO employees (name)
+SELECT 'Carla' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM employees WHERE name = 'Carla') LIMIT 1;
 
--- Optional example customer (only insert if not exists)
+INSERT INTO services (name, duration_minutes, price)
+SELECT 'Corte Feminino', 45, 80.00
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM services WHERE name = 'Corte Feminino') LIMIT 1;
+INSERT INTO services (name, duration_minutes, price)
+SELECT 'Corte Masculino', 30, 45.00
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM services WHERE name = 'Corte Masculino') LIMIT 1;
+INSERT INTO services (name, duration_minutes, price)
+SELECT 'Escova', 60, 70.00
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM services WHERE name = 'Escova') LIMIT 1;
+INSERT INTO services (name, duration_minutes, price)
+SELECT 'Hidratação', 50, 120.00
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM services WHERE name = 'Hidratação') LIMIT 1;
+
 INSERT INTO customers (name, phone, email, created_at)
-SELECT * FROM (SELECT 'Cliente Exemplo' AS name, '11999990000' AS phone, 'cliente@example.com' AS email, NOW() AS created_at) AS tmp
-WHERE NOT EXISTS (
-  SELECT 1 FROM customers WHERE email = 'cliente@example.com'
-) LIMIT 1;
+SELECT 'Cliente Exemplo', '11999990000', 'cliente@example.com', NOW()
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM customers WHERE email = 'cliente@example.com') LIMIT 1;
 
--- Optional example appointment (only if employee and service exist)
--- This inserts an appointment for Ana for 'Corte Feminino' tomorrow at 10:00 if no overlapping appointment exists.
-
-SET @emp_id = (SELECT id FROM employees WHERE name = 'Ana' LIMIT 1);
-SET @srv_id = (SELECT id FROM services WHERE name = 'Corte Feminino' LIMIT 1);
-SET @cust_id = (SELECT id FROM customers WHERE email = 'cliente@example.com' LIMIT 1);
-
--- Only insert if all ids present and no overlap
-IF @emp_id IS NOT NULL AND @srv_id IS NOT NULL AND @cust_id IS NOT NULL THEN
-  SET @start_time = DATE_ADD(DATE(NOW()), INTERVAL 1 DAY) + INTERVAL 10 HOUR;
-  SET @end_time = DATE_ADD(@start_time, INTERVAL 45 MINUTE);
-  IF NOT EXISTS (
-    SELECT 1 FROM appointments WHERE employee_id = @emp_id AND status = 'scheduled' AND NOT (end_time <= @start_time OR start_time >= @end_time)
-  ) THEN
-    INSERT INTO appointments (customer_id, employee_id, service_id, start_time, end_time, status, created_at)
-    VALUES (@cust_id, @emp_id, @srv_id, @start_time, @end_time, 'scheduled', NOW());
-  END IF;
-END IF;
+-- Insere um agendamento de exemplo (amanhã 10:00 - 10:45) somente se employee/service/customer existirem e não houver conflito
+INSERT INTO appointments (customer_id, employee_id, service_id, start_time, end_time, status, created_at)
+SELECT c.id, e.id, s.id,
+  CONCAT(DATE(DATE_ADD(NOW(), INTERVAL 1 DAY)), ' 10:00:00'),
+  CONCAT(DATE(DATE_ADD(NOW(), INTERVAL 1 DAY)), ' 10:45:00'),
+  'scheduled', NOW()
+FROM customers c
+JOIN employees e ON e.name = 'Ana'
+JOIN services s ON s.name = 'Corte Feminino'
+WHERE c.email = 'cliente@example.com'
+  AND NOT EXISTS (
+    SELECT 1 FROM appointments a
+    WHERE a.employee_id = e.id
+      AND a.status = 'scheduled'
+      AND NOT (a.end_time <= CONCAT(DATE(DATE_ADD(NOW(), INTERVAL 1 DAY)), ' 10:00:00') OR a.start_time >= CONCAT(DATE(DATE_ADD(NOW(), INTERVAL 1 DAY)), ' 10:45:00'))
+  )
+LIMIT 1;
