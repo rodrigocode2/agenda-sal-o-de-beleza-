@@ -2,12 +2,13 @@
   "name": "hairconcept",
   "version": "1.0.0",
   "description": "HairConcept - Sistema de Agendamento para Salões com Firebase & Stripe",
-  "main": "api/config.js",
+  "main": "api/server.js",
   "scripts": {
-    "start": "node docs/examples/backend-server.example.js",
-    "dev": "nodemon docs/examples/backend-server.example.js",
+    "start": "node api/server.js",
+    "dev": "nodemon api/server.js",
     "build": "echo 'Build successful'",
-    "vercel-build": "echo 'Building for Vercel...'"
+    "vercel-build": "echo 'Building for Vercel...'",
+    "seed": "node scripts/seed.js"
   },
   "keywords": [
     "salao",
@@ -22,7 +23,10 @@
     "cors": "^2.8.5",
     "stripe": "^12.0.0",
     "firebase-admin": "^11.0.0",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "mysql2": "^3.3.0",
+    "bcrypt": "^5.1.0",
+    "jsonwebtoken": "^9.0.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"
