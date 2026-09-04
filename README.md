@@ -2,7 +2,7 @@
 
 Adições nesta branch: integração com MySQL (tabelas de customers, services, employees, appointments), endpoints REST para agendamentos e autenticação, migrations e seeds.
 
-Como usar
+## Como usar
 
 1) Copie `.env.example` para `.env` e preencha as variáveis (DB_HOST, DB_USER, etc.).
 
@@ -22,7 +22,7 @@ Como usar
 
    npm run dev
 
-Endpoints principais
+## Endpoints principais
 
 - POST /api/auth/register — criar usuário (body: nome, email, senha)
 - POST /api/auth/login — login (body: email, senha) — retorna JWT
@@ -30,7 +30,7 @@ Endpoints principais
 - GET  /api/appointments — listar agendamentos (query: date, employee_id)
 - POST /api/appointments/:id/cancel — cancelar agendamento
 
-Notas
+## Notas
 
 - Não adicione senhas ao repositório. Use variáveis de ambiente na Vercel/serviço de hospedagem.
 - Se o seu banco não é acessível publicamente, rode o backend no mesmo servidor/VPC ou use túnel SSH.
